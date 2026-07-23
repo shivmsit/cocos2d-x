@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # coding=utf-8
 #
@@ -42,14 +42,12 @@ import zipfile
 import shutil
 import sys
 import traceback
-import distutils
 import json
 
 from optparse import OptionParser
 from time import time
 from time import sleep
 from sys import stdout
-from distutils.dir_util import copy_tree, remove_tree
 
 
 def delete_folder_except(folder_path, excepts):
@@ -112,10 +110,7 @@ class CocosZipInstaller(object):
             print("==> version file doesn't exist")
 
     def get_input_value(self, prompt):
-        if(python_2):
-            ret = raw_input(prompt)
-        else:
-            ret = input(prompt)
+        ret = input(prompt)
         ret.rstrip(" \t")
         return ret
 
@@ -125,39 +120,32 @@ class CocosZipInstaller(object):
             os.remove(self._filename)
         except OSError:
             pass
-        print("==> Ready to download '%s' from '%s'" %
-              (self._filename, self._url))
-        if(python_2):
-            import urllib2 as urllib
-        else:
-            import urllib.request as urllib
+        print(("==> Ready to download '%s' from '%s'" %
+              (self._filename, self._url)))
+        import urllib.request
         try:
-            u = urllib.urlopen(self._url)
+            u = urllib.request.urlopen(self._url)
         except Exception as e:
             if e.code == 404:
-                print("==> Error: Could not find the file from url: '%s'" %
-                      (self._url))
-            print("==> Http request failed, error code: " +
-                  str(e.code) + ", reason: " + str(e.read()))
+                print(("==> Error: Could not find the file from url: '%s'" %
+                      (self._url)))
+            print(("==> Http request failed, error code: " +
+                  str(e.code) + ", reason: " + str(e.read())))
             sys.exit(1)
 
         f = open(self._filename, 'wb')
         meta = u.info()
-        content_len = 0
-        if(python_2):
-            content_len = meta.getheaders("Content-Length")
-        else:
-            content_len = meta['Content-Length']
+        content_len = meta.get("Content-Length")
 
         file_size = 0
-        if content_len and len(content_len) > 0:
-            file_size = int(content_len[0])
+        if content_len:
+            file_size = int(content_len)
         else:
             # github server may not reponse a header information which contains `Content-Length`,
             # therefore, the size needs to be written hardcode here. While server doesn't return
             # `Content-Length`, use it instead
-            print("==> WARNING: Couldn't grab the file size from remote, use 'zip_file_size' section in '%s'" %
-                  self._config_path)
+            print(("==> WARNING: Couldn't grab the file size from remote, use 'zip_file_size' section in '%s'" %
+                  self._config_path))
             file_size = self._zip_file_size
 
         print("==> Start to download, please wait ...")
@@ -171,7 +159,7 @@ class CocosZipInstaller(object):
         while True:
             buffer = u.read(block_sz)
             if not buffer:
-                print("%s%s" % (" " * len(status), "\r")),
+                print(("%s%s" % (" " * len(status), "\r")), end=' ')
                 break
 
             file_size_dl += len(buffer)
@@ -187,9 +175,9 @@ class CocosZipInstaller(object):
                 else:
                     status = r"Downloaded: %6dK, Speed: %6.2f KB/S " % (
                         file_size_dl / 1000, speed)
-                print(status),
+                print((status), end=' ')
                 sys.stdout.flush()
-                print("\r"),
+                print(("\r"), end=' ')
                 block_size_per_second = 0
                 old_time = new_time
 
@@ -260,8 +248,8 @@ class CocosZipInstaller(object):
                 raise UnrecognizedFormat(
                     "%s is not a zip file" % (self._filename))
         except UnrecognizedFormat as e:
-            print("==> Unrecognized zip format from your local '%s' file!" %
-                  (self._filename))
+            print(("==> Unrecognized zip format from your local '%s' file!" %
+                  (self._filename)))
             if os.path.isfile(self._filename):
                 os.remove(self._filename)
             print("==> Download it from internet again, please wait...")
@@ -273,7 +261,7 @@ class CocosZipInstaller(object):
             times_count += 1
             try:
                 if(times_count > 1):
-                    print("==> Download file retry " + str(times_count))
+                    print(("==> Download file retry " + str(times_count)))
                 self.download_file()
                 return
             except Exception as err:
@@ -320,8 +308,8 @@ class CocosZipInstaller(object):
             os.symlink("libfmod.so", os.path.join(fmod_path, "libfmod.so.6"))
             os.symlink("libfmodL.so", os.path.join(fmod_path, "libfmodL.so.6"))
         else:
-            print(
-                "==> fmod directory not found `%s`, failed to fix fmod link!" % fmod_path)
+            print((
+                "==> fmod directory not found `%s`, failed to fix fmod link!" % fmod_path))
 
     def run(self, workpath, folder_for_extracting, remove_downloaded, force_update, download_only):
         if not force_update and not self.need_to_update():
@@ -341,10 +329,10 @@ class CocosZipInstaller(object):
 
             self.clean_external_folder(folder_for_extracting)
             print("==> Copying files...")
-            distutils.dir_util.copy_tree(
-                self._extracted_folder_name, folder_for_extracting)
+            shutil.copytree(
+                self._extracted_folder_name, folder_for_extracting, dirs_exist_ok=True)
             if self._move_dirs is not None:
-                for srcDir in self._move_dirs.keys():
+                for srcDir in list(self._move_dirs.keys()):
                     distDir = os.path.join(os.path.join(
                         workpath, self._move_dirs[srcDir]), srcDir)
                     if os.path.exists(distDir):
@@ -362,15 +350,7 @@ class CocosZipInstaller(object):
                 elif self.ask_to_delete_downloaded_zip_file():
                     os.remove(self._filename)
         else:
-            print("==> Download (%s) finish!" % self._filename)
-
-
-def _is_python_version_2():
-    major_ver = sys.version_info[0]
-    print("The python version is %d.%d." % (major_ver, sys.version_info[1]))
-    if major_ver > 2:
-        return False
-    return True
+            print(("==> Download (%s) finish!" % self._filename))
 
 
 def main():
@@ -402,7 +382,6 @@ def main():
 
 # -------------- main --------------
 if __name__ == '__main__':
-    python_2 = _is_python_version_2()
     try:
         main()
     except Exception as e:
