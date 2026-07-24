@@ -1,26 +1,40 @@
-apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+}
 
 android {
-    compileSdkVersion PROP_COMPILE_SDK_VERSION.toInteger()
+    namespace 'org.cocos2dx.lib'
+    compileSdk PROP_COMPILE_SDK_VERSION.toInteger()
 
     defaultConfig {
-        minSdkVersion PROP_MIN_SDK_VERSION
-        targetSdkVersion PROP_TARGET_SDK_VERSION
+        minSdk PROP_MIN_SDK_VERSION.toInteger()
+        targetSdk PROP_TARGET_SDK_VERSION.toInteger()
         versionCode 1
         versionName "1.0"
     }
 
-    sourceSets.main {
-        aidl.srcDir "../java/src"
-        java.srcDir "../java/src"
-        manifest.srcFile "AndroidManifest.xml"
+    sourceSets {
+        main {
+            aidl.srcDirs '../java/src'
+            java.srcDirs '../java/src'
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            consumerProguardFiles 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        // The legacy Enhance API is defined by an AIDL interface in the
+        // engine's Java source tree. AGP 9 disables AIDL by default.
+        aidl true
     }
 }
 
