@@ -40,10 +40,8 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/NSSound.h>
 
-enum AudioSessionProperties {
-	kAudioSessionProperty_OtherAudioIsPlaying,
-	kAudioSessionProperty_AudioRoute	
-};
+// AudioSessionProperties are supplied by modern macOS SDKs. The old local
+// fallback conflicts with their declarations.
 #ifdef __cplusplus
 extern "C" {
 #endif	

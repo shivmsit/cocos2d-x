@@ -33,6 +33,7 @@
 #include <string>
 #include <mutex>
 #include <vector>
+#include <functional>
 
 #include "platform/CCPlatformMacros.h"
 #include "audio/apple/AudioMacros.h"
