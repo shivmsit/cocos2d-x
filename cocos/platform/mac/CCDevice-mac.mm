@@ -309,17 +309,29 @@ static bool _initWithString(const char * text, Device::TextAlign align, const ch
                                      realDimensions.width, realDimensions.height);
         
         
-        [[NSGraphicsContext currentContext] setShouldAntialias:NO];
-        
-        NSImage *image = [[NSImage alloc] initWithSize:NSMakeSize(POTWide, POTHigh)];
-        [image lockFocus];
-        // patch for mac retina display and lableTTF
-        [[NSAffineTransform transform] set];
+        // Draw directly into a known RGBA bitmap.  NSImage lockFocus followed
+        // by initWithFocusedViewRect may expose a Retina/scaled backing store
+        // whose bytes no longer match POTWide * POTHigh * 4 on current macOS.
+        NSBitmapImageRep* offscreenRep = [[[NSBitmapImageRep alloc]
+            initWithBitmapDataPlanes:NULL
+            pixelsWide:POTWide
+            pixelsHigh:POTHigh
+            bitsPerSample:8
+            samplesPerPixel:4
+            hasAlpha:YES
+            isPlanar:NO
+            colorSpaceName:NSDeviceRGBColorSpace
+            bitmapFormat:0
+            bytesPerRow:4 * POTWide
+            bitsPerPixel:32] autorelease];
+
+        NSGraphicsContext* graphicsContext = [NSGraphicsContext graphicsContextWithBitmapImageRep:offscreenRep];
+        [NSGraphicsContext saveGraphicsState];
+        [NSGraphicsContext setCurrentContext:graphicsContext];
         [stringWithAttributes drawInRect:textRect];
-        NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithFocusedViewRect:NSMakeRect (0.0f, 0.0f, POTWide, POTHigh)];
-        [image unlockFocus];
-        
-        auto data = (unsigned char*) [bitmap bitmapData];  //Use the same buffer to improve the performance.
+        [NSGraphicsContext restoreGraphicsState];
+
+        auto data = (unsigned char*)[offscreenRep bitmapData];
         
         NSUInteger textureSize = POTWide * POTHigh * 4;
         auto dataNew = (unsigned char*)malloc(sizeof(unsigned char) * textureSize);
@@ -333,8 +345,6 @@ static bool _initWithString(const char * text, Device::TextAlign align, const ch
             info->isPremultipliedAlpha = true;
             ret = true;
         }
-        [bitmap release];
-        [image release];
     } while (0);
     return ret;
 }
