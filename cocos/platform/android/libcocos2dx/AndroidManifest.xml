@@ -1,9 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.cocos2dx.lib">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.VIBRATE" />
-
-    <application android:allowBackup="true">
-
-    </application>
 
 </manifest>
