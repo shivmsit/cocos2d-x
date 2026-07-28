@@ -16,235 +16,249 @@
  * 2. Altered source versions must be plainly marked as such, and must not be
  * misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
+ *
+ * Box2D 3.x callback adaptation of the Cocos2d-x GLES testbed renderer.
  */
 
 #include "GLES-Render.h"
-#include "cocos2d.h"
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
+
+#include <algorithm>
+#include <array>
+#include <cfloat>
+#include <cmath>
 
 USING_NS_CC;
 
-GLESDebugDraw::GLESDebugDraw()
-    : mRatio( 1.0f )
+namespace
 {
-    this->initShader();
+constexpr int CircleSegments = 24;
+constexpr int CornerSegments = 4;
+constexpr int MaxDebugVertices = B2_MAX_POLYGON_VERTICES * (CornerSegments + 1);
 }
 
-GLESDebugDraw::GLESDebugDraw( float32 ratio )
-    : mRatio( ratio )
+GLESDebugDraw::GLESDebugDraw(float ratio)
+    : _ratio(ratio)
+    , _shaderProgram(GLProgramCache::getInstance()->getGLProgram(GLProgram::SHADER_NAME_POSITION_U_COLOR))
+    , _colorLocation(glGetUniformLocation(_shaderProgram->getProgram(), "u_color"))
+    , _debugDraw(b2DefaultDebugDraw())
 {
-    this->initShader();
+    _debugDraw.context = this;
+    _debugDraw.DrawPolygonFcn = DrawPolygonCallback;
+    _debugDraw.DrawSolidPolygonFcn = DrawSolidPolygonCallback;
+    _debugDraw.DrawCircleFcn = DrawCircleCallback;
+    _debugDraw.DrawSolidCircleFcn = DrawSolidCircleCallback;
+    _debugDraw.DrawSolidCapsuleFcn = DrawSolidCapsuleCallback;
+    _debugDraw.DrawSegmentFcn = DrawSegmentCallback;
+    _debugDraw.DrawTransformFcn = DrawTransformCallback;
+    _debugDraw.DrawPointFcn = DrawPointCallback;
+    _debugDraw.DrawStringFcn = DrawStringCallback;
+    _debugDraw.drawShapes = true;
+    _debugDraw.drawJoints = true;
 }
 
-void GLESDebugDraw::initShader( void )
+void GLESDebugDraw::prepare()
 {
-    mShaderProgram = GLProgramCache::getInstance()->getGLProgram(GLProgram::SHADER_NAME_POSITION_U_COLOR);
-
-    mColorLocation = glGetUniformLocation( mShaderProgram->getProgram(), "u_color");
+    _shaderProgram->use();
+    _shaderProgram->setUniformsForBuiltins();
+    GL::enableVertexAttribs(GL::VERTEX_ATTRIB_FLAG_POSITION);
 }
 
-void GLESDebugDraw::DrawPolygon(const b2Vec2* old_vertices, int vertexCount, const b2Color& color)
+void GLESDebugDraw::setColor(b2HexColor color, float alpha, float scale)
 {
-    mShaderProgram->use();
-    mShaderProgram->setUniformsForBuiltins();
+    const uint32_t value = static_cast<uint32_t>(color);
+    const float red = static_cast<float>((value >> 16) & 0xFF) / 255.0f;
+    const float green = static_cast<float>((value >> 8) & 0xFF) / 255.0f;
+    const float blue = static_cast<float>(value & 0xFF) / 255.0f;
+    _shaderProgram->setUniformLocationWith4f(_colorLocation,
+                                             std::min(red * scale, 1.0f),
+                                             std::min(green * scale, 1.0f),
+                                             std::min(blue * scale, 1.0f),
+                                             alpha);
+}
 
-    b2Vec2* vertices = new b2Vec2[vertexCount];
-    for( int i=0;i<vertexCount;i++) 
+void GLESDebugDraw::drawPolygon(const b2Vec2* vertices, int vertexCount, b2HexColor color, bool solid)
+{
+    CCASSERT(vertexCount <= MaxDebugVertices, "Box2D debug polygon exceeds renderer capacity");
+    prepare();
+    std::array<GLfloat, MaxDebugVertices * 2> points;
+    for (int i = 0; i < vertexCount; ++i)
     {
-        vertices[i] = old_vertices[i];
-        vertices[i] *= mRatio;
+        points[2 * i] = vertices[i].x * _ratio;
+        points[2 * i + 1] = vertices[i].y * _ratio;
     }
 
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r, color.g, color.b, 1);
-
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    glDrawArrays(GL_LINE_LOOP, 0, vertexCount);
-
-    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(1,vertexCount);
-
-
-    CHECK_GL_ERROR_DEBUG();
-
-    delete[] vertices;
-}
-
-void GLESDebugDraw::DrawSolidPolygon(const b2Vec2* old_vertices, int vertexCount, const b2Color& color)
-{
-    mShaderProgram->use();
-    mShaderProgram->setUniformsForBuiltins();
-
-    b2Vec2* vertices = new b2Vec2[vertexCount];
-    for( int i=0;i<vertexCount;i++) {
-        vertices[i] = old_vertices[i];
-        vertices[i] *= mRatio;
-    }
-    
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r*0.5f, color.g*0.5f, color.b*0.5f, 0.5f);
-
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount);
-
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r, color.g, color.b, 1);
-    glDrawArrays(GL_LINE_LOOP, 0, vertexCount);
-
-    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(2,vertexCount*2);
-
-    CHECK_GL_ERROR_DEBUG();
-
-    delete[] vertices;
-}
-
-void GLESDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Color& color)
-{
-    mShaderProgram->use();
-    mShaderProgram->setUniformsForBuiltins();
-
-    const float32 k_segments = 16.0f;
-    int vertexCount=16;
-    const float32 k_increment = 2.0f * b2_pi / k_segments;
-    float32 theta = 0.0f;
-    
-    GLfloat*    glVertices = new (std::nothrow) GLfloat[vertexCount*2];
-    for (int i = 0; i < k_segments; ++i)
+    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, points.data());
+    if (solid)
     {
-        b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
-        glVertices[i*2]=v.x * mRatio;
-        glVertices[i*2+1]=v.y * mRatio;
-        theta += k_increment;
+        setColor(color, 0.35f, 0.5f);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount);
     }
-    
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r, color.g, color.b, 1);
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, glVertices);
-
+    setColor(color, 1.0f, 1.35f);
+    glLineWidth(2.0f);
     glDrawArrays(GL_LINE_LOOP, 0, vertexCount);
-
-    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(1,vertexCount);
-
-    CHECK_GL_ERROR_DEBUG();
-
-    delete[] glVertices;
+    glLineWidth(1.0f);
+    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(solid ? 2 : 1, solid ? vertexCount * 2 : vertexCount);
 }
 
-void GLESDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
+void GLESDebugDraw::drawSolidPolygon(b2Transform transform, const b2Vec2* vertices, int vertexCount,
+                                    float radius, b2HexColor color)
 {
-    mShaderProgram->use();
-    mShaderProgram->setUniformsForBuiltins();
+    std::array<b2Vec2, MaxDebugVertices> transformed;
+    int transformedCount = 0;
 
-    const float32 k_segments = 16.0f;
-    int vertexCount=16;
-    const float32 k_increment = 2.0f * b2_pi / k_segments;
-    float32 theta = 0.0f;
-    
-    GLfloat*    glVertices = new (std::nothrow) GLfloat[vertexCount*2];
-    for (int i = 0; i < k_segments; ++i)
+    if (radius <= 0.0f)
     {
-        b2Vec2 v = center + radius * b2Vec2(cosf(theta), sinf(theta));
-        glVertices[i*2]=v.x * mRatio;
-        glVertices[i*2+1]=v.y * mRatio;
-        theta += k_increment;
+        for (int i = 0; i < vertexCount; ++i)
+        {
+            transformed[transformedCount++] = b2TransformPoint(transform, vertices[i]);
+        }
+        drawPolygon(transformed.data(), transformedCount, color, true);
+        return;
     }
-    
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r*0.5f, color.g*0.5f, color.b*0.5f, 0.5f);
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, glVertices);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount);
 
+    for (int i = 0; i < vertexCount; ++i)
+    {
+        const b2Vec2 previous = vertices[(i + vertexCount - 1) % vertexCount];
+        const b2Vec2 current = vertices[i];
+        const b2Vec2 next = vertices[(i + 1) % vertexCount];
+        const b2Vec2 previousEdge = b2Normalize(b2Sub(current, previous));
+        const b2Vec2 nextEdge = b2Normalize(b2Sub(next, current));
+        const b2Vec2 previousNormal = {previousEdge.y, -previousEdge.x};
+        const b2Vec2 nextNormal = {nextEdge.y, -nextEdge.x};
 
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r, color.g, color.b, 1);
-    glDrawArrays(GL_LINE_LOOP, 0, vertexCount);
+        float startAngle = std::atan2(previousNormal.y, previousNormal.x);
+        float endAngle = std::atan2(nextNormal.y, nextNormal.x);
+        while (endAngle < startAngle)
+        {
+            endAngle += 2.0f * B2_PI;
+        }
 
-    // Draw the axis line
-    DrawSegment(center,center+radius*axis,color);
-
-    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(2,vertexCount*2);
-
-    CHECK_GL_ERROR_DEBUG();
-
-    delete[] glVertices;
+        for (int segment = 0; segment <= CornerSegments; ++segment)
+        {
+            const float fraction = static_cast<float>(segment) / static_cast<float>(CornerSegments);
+            const float angle = startAngle + fraction * (endAngle - startAngle);
+            const b2Vec2 roundedVertex = {
+                current.x + radius * std::cos(angle),
+                current.y + radius * std::sin(angle),
+            };
+            transformed[transformedCount++] = b2TransformPoint(transform, roundedVertex);
+        }
+    }
+    drawPolygon(transformed.data(), transformedCount, color, true);
 }
 
-void GLESDebugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
+void GLESDebugDraw::drawCircle(b2Vec2 center, float radius, b2HexColor color, bool solid)
 {
-    mShaderProgram->use();
-    mShaderProgram->setUniformsForBuiltins();
-
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r, color.g, color.b, 1);
-
-    GLfloat    glVertices[] = 
+    b2Vec2 vertices[CircleSegments];
+    for (int i = 0; i < CircleSegments; ++i)
     {
-        p1.x * mRatio, p1.y * mRatio,
-        p2.x * mRatio, p2.y * mRatio
-    };
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, glVertices);
+        const float angle = 2.0f * B2_PI * static_cast<float>(i) / static_cast<float>(CircleSegments);
+        vertices[i] = {center.x + radius * std::cos(angle), center.y + radius * std::sin(angle)};
+    }
+    drawPolygon(vertices, CircleSegments, color, solid);
+}
 
+void GLESDebugDraw::drawCapsule(b2Vec2 p1, b2Vec2 p2, float radius, b2HexColor color)
+{
+    const b2Vec2 delta = b2Sub(p2, p1);
+    const float lengthSquared = b2LengthSquared(delta);
+    if (lengthSquared <= FLT_EPSILON)
+    {
+        drawCircle(p1, radius, color, true);
+        return;
+    }
+
+    const b2Vec2 axis = b2MulSV(1.0f / std::sqrt(lengthSquared), delta);
+    const b2Vec2 normal = {-axis.y, axis.x};
+    const float normalAngle = std::atan2(normal.y, normal.x);
+
+    constexpr int CapSegments = CircleSegments / 2;
+    std::array<b2Vec2, 2 * (CapSegments + 1)> vertices;
+    int vertexCount = 0;
+
+    // Counter-clockwise outline: lower side, far cap, upper side, near cap.
+    for (int segment = 0; segment <= CapSegments; ++segment)
+    {
+        const float angle = normalAngle - B2_PI +
+                            B2_PI * static_cast<float>(segment) / static_cast<float>(CapSegments);
+        vertices[vertexCount++] = {p2.x + radius * std::cos(angle), p2.y + radius * std::sin(angle)};
+    }
+    for (int segment = 0; segment <= CapSegments; ++segment)
+    {
+        const float angle = normalAngle +
+                            B2_PI * static_cast<float>(segment) / static_cast<float>(CapSegments);
+        vertices[vertexCount++] = {p1.x + radius * std::cos(angle), p1.y + radius * std::sin(angle)};
+    }
+    drawPolygon(vertices.data(), vertexCount, color, true);
+}
+
+void GLESDebugDraw::drawSegment(b2Vec2 p1, b2Vec2 p2, b2HexColor color)
+{
+    prepare();
+    setColor(color, 1.0f, 1.35f);
+    const GLfloat points[] = {p1.x * _ratio, p1.y * _ratio, p2.x * _ratio, p2.y * _ratio};
+    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, points);
+    glLineWidth(2.0f);
     glDrawArrays(GL_LINES, 0, 2);
-
-    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(1,2);
-
-    CHECK_GL_ERROR_DEBUG();
+    glLineWidth(1.0f);
+    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(1, 2);
 }
 
-void GLESDebugDraw::DrawTransform(const b2Transform& xf)
+void GLESDebugDraw::drawPoint(b2Vec2 point, float size, b2HexColor color)
 {
-    b2Vec2 p1 = xf.p, p2;
-    const float32 k_axisScale = 0.4f;
-    p2 = p1 + k_axisScale * xf.q.GetXAxis();
-    DrawSegment(p1, p2, b2Color(1,0,0));
-
-    p2 = p1 + k_axisScale * xf.q.GetYAxis();
-    DrawSegment(p1,p2,b2Color(0,1,0));
-}
-
-void GLESDebugDraw::DrawPoint(const b2Vec2& p, float32 size, const b2Color& color)
-{
-    mShaderProgram->use();
-    mShaderProgram->setUniformsForBuiltins();
-
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r, color.g, color.b, 1);
-
-    //    glPointSize(size);
-
-    GLfloat                glVertices[] = {
-        p.x * mRatio, p.y * mRatio
-    };
-
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, glVertices);
-
+    prepare();
+    setColor(color);
+    glPointSize(size);
+    const GLfloat points[] = {point.x * _ratio, point.y * _ratio};
+    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, points);
     glDrawArrays(GL_POINTS, 0, 1);
-    //    glPointSize(1.0f);
-
-    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(1,1);
-
-    CHECK_GL_ERROR_DEBUG();
+    glPointSize(1.0f);
 }
 
-void GLESDebugDraw::DrawString(int x, int y, const char *string, ...)
+void GLESDebugDraw::DrawPolygonCallback(const b2Vec2* v, int n, b2HexColor c, void* x)
 {
-//    NSLog(@"DrawString: unsupported: %s", string);
-    //printf(string);
-    /* Unsupported as yet. Could replace with bitmap font renderer at a later date */
+    static_cast<GLESDebugDraw*>(x)->drawPolygon(v, n, c, false);
 }
 
-void GLESDebugDraw::DrawAABB(b2AABB* aabb, const b2Color& color)
+void GLESDebugDraw::DrawSolidPolygonCallback(b2Transform t, const b2Vec2* v, int n, float radius,
+                                             b2HexColor c, void* x)
 {
-    mShaderProgram->use();
-    mShaderProgram->setUniformsForBuiltins();
+    static_cast<GLESDebugDraw*>(x)->drawSolidPolygon(t, v, n, radius, c);
+}
 
-    mShaderProgram->setUniformLocationWith4f(mColorLocation, color.r, color.g, color.b, 1);
+void GLESDebugDraw::DrawCircleCallback(b2Vec2 p, float r, b2HexColor c, void* x)
+{
+    static_cast<GLESDebugDraw*>(x)->drawCircle(p, r, c, false);
+}
 
-    GLfloat                glVertices[] = {
-        aabb->lowerBound.x * mRatio, aabb->lowerBound.y * mRatio,
-        aabb->upperBound.x * mRatio, aabb->lowerBound.y * mRatio,
-        aabb->upperBound.x * mRatio, aabb->upperBound.y * mRatio,
-        aabb->lowerBound.x * mRatio, aabb->upperBound.y * mRatio
-    };
+void GLESDebugDraw::DrawSolidCircleCallback(b2Transform t, float r, b2HexColor c, void* x)
+{
+    static_cast<GLESDebugDraw*>(x)->drawCircle(t.p, r, c, true);
+    static_cast<GLESDebugDraw*>(x)->drawSegment(t.p, b2MulAdd(t.p, r, b2Rot_GetXAxis(t.q)), c);
+}
 
-    glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, glVertices);
-    glDrawArrays(GL_LINE_LOOP, 0, 4);
+void GLESDebugDraw::DrawSolidCapsuleCallback(b2Vec2 p1, b2Vec2 p2, float r, b2HexColor c, void* x)
+{
+    static_cast<GLESDebugDraw*>(x)->drawCapsule(p1, p2, r, c);
+}
 
-    CC_INCREMENT_GL_DRAWN_BATCHES_AND_VERTICES(1,4);
+void GLESDebugDraw::DrawSegmentCallback(b2Vec2 p1, b2Vec2 p2, b2HexColor c, void* x)
+{
+    static_cast<GLESDebugDraw*>(x)->drawSegment(p1, p2, c);
+}
 
-    CHECK_GL_ERROR_DEBUG();
+void GLESDebugDraw::DrawTransformCallback(b2Transform t, void* x)
+{
+    auto* draw = static_cast<GLESDebugDraw*>(x);
+    draw->drawSegment(t.p, b2MulAdd(t.p, 0.4f, b2Rot_GetXAxis(t.q)), b2_colorRed);
+    draw->drawSegment(t.p, b2MulAdd(t.p, 0.4f, b2Rot_GetYAxis(t.q)), b2_colorGreen);
+}
+
+void GLESDebugDraw::DrawPointCallback(b2Vec2 p, float size, b2HexColor c, void* x)
+{
+    static_cast<GLESDebugDraw*>(x)->drawPoint(p, size, c);
+}
+
+void GLESDebugDraw::DrawStringCallback(b2Vec2, const char*, b2HexColor, void*)
+{
 }
