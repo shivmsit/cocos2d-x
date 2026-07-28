@@ -25,6 +25,7 @@
 #define __PHYSICSNODES_CCPHYSICSSPRITE_H__
 
 #include "2d/CCSprite.h"
+#include "box2d/id.h"
 #include "extensions/ExtensionMacros.h"
 #include "extensions/ExtensionExport.h"
 #include "base/CCEventListenerCustom.h"
@@ -32,7 +33,6 @@
 #if (CC_ENABLE_CHIPMUNK_INTEGRATION || CC_ENABLE_BOX2D_INTEGRATION)
 
 struct cpBody;
-class b2Body;
 
 NS_CC_EXT_BEGIN
 
@@ -104,9 +104,9 @@ public:
     //
     // Box2d specific
     //
-    /** Body accessor when using box2d */
-    b2Body* getB2Body() const;
-    void setB2Body(b2Body *pBody);
+    /** Body handle accessor when using Box2D. */
+    b2BodyId getB2Body() const;
+    void setB2Body(b2BodyId body);
 
     float getPTMRatio() const;
     void setPTMRatio(float fPTMRatio);
@@ -140,7 +140,7 @@ protected:
     cpBody  *_CPBody;
 
     // box2d specific
-    b2Body  *_pB2Body;
+    b2BodyId _pB2Body;
     float   _PTMRatio;
     
     // Event for update synchronise physic transform

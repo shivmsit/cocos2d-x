@@ -38,7 +38,7 @@ THE SOFTWARE.
 #if ENABLE_PHYSICS_CHIPMUNK_DETECT
 #include "chipmunk/chipmunk.h"
 #elif ENABLE_PHYSICS_BOX2D_DETECT
-#include "Box2D/Box2D.h"
+#include "box2d/box2d.h"
 #endif
 
 
@@ -56,21 +56,21 @@ public:
     virtual ~ColliderFilter() { }
 #if ENABLE_PHYSICS_BOX2D_DETECT
 public:
-    ColliderFilter(uint16 categoryBits = 0x0001, uint16 maskBits = 0xFFFF, int16 groupIndex = 0);
-    void updateShape(b2Fixture *fixture);
+    ColliderFilter(uint64_t categoryBits = 0x0001, uint64_t maskBits = 0xFFFF, int groupIndex = 0);
+    void updateShape(b2ShapeId shape);
 
-    virtual void setCategoryBits(uint16 categoryBits) { _categoryBits = categoryBits; }
-    virtual uint16 getCategoryBits() const { return _categoryBits; }
+    virtual void setCategoryBits(uint64_t categoryBits) { _categoryBits = categoryBits; }
+    virtual uint64_t getCategoryBits() const { return _categoryBits; }
 
-    virtual void setMaskBits(uint16 maskBits) { _maskBits = maskBits; }
-    virtual uint16 getMaskBits() const { return _maskBits; }
+    virtual void setMaskBits(uint64_t maskBits) { _maskBits = maskBits; }
+    virtual uint64_t getMaskBits() const { return _maskBits; }
 
-    virtual void setGroupIndex(int16 groupIndex) { _groupIndex = groupIndex; }
-    virtual int16 getGroupIndex() const { return _groupIndex; }
+    virtual void setGroupIndex(int groupIndex) { _groupIndex = groupIndex; }
+    virtual int getGroupIndex() const { return _groupIndex; }
 protected:
-    uint16 _categoryBits;
-    uint16 _maskBits;
-    int16 _groupIndex;
+    uint64_t _categoryBits;
+    uint64_t _maskBits;
+    int _groupIndex;
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
 public:
     ColliderFilter(cpCollisionType collisionType = 0, cpGroup group = 0);
@@ -101,8 +101,8 @@ public:
 #endif
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
-    virtual void setB2Fixture(b2Fixture *fixture) { _fixture = fixture; }
-    virtual b2Fixture *getB2Fixture() const { return _fixture; }
+    virtual void setB2Fixture(b2ShapeId fixture) { _fixture = fixture; }
+    virtual b2ShapeId getB2Fixture() const { return _fixture; }
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
     virtual void setShape(cpShape *shape) { _shape = shape; }
     virtual cpShape *getShape() const { return _shape; }
@@ -113,12 +113,14 @@ public:
 private:
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
-    b2Fixture *_fixture;
+    b2ShapeId _fixture;
     ColliderFilter *_filter;
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
     cpShape *_shape;
     ColliderFilter *_filter;
-#elif ENABLE_PHYSICS_SAVE_CALCULATED_VERTEX
+#endif
+
+#if ENABLE_PHYSICS_SAVE_CALCULATED_VERTEX
     std::vector<cocos2d::Vec2> _calculatedVertexList;
 #endif
 
@@ -173,8 +175,8 @@ public:
     virtual Bone *getBone() const { return _bone; }
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
-    virtual void setBody(b2Body *body);
-    virtual b2Body *getBody() const;
+    virtual void setBody(b2BodyId body);
+    virtual b2BodyId getBody() const;
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
     virtual void setBody(cpBody *body);
     virtual cpBody *getBody() const;
@@ -185,7 +187,7 @@ public:
     Bone *_bone;
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
-    b2Body *_body;
+    b2BodyId _body;
     ColliderFilter *_filter;
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
     cpBody *_body;

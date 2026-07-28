@@ -34,7 +34,7 @@
 #if CC_ENABLE_CHIPMUNK_INTEGRATION
 #include "chipmunk/chipmunk.h"
 #elif CC_ENABLE_BOX2D_INTEGRATION
-#include "Box2D/Box2D.h"
+#include "box2d/box2d.h"
 #endif
 
 NS_CC_EXT_BEGIN
@@ -42,7 +42,7 @@ NS_CC_EXT_BEGIN
 PhysicsSprite::PhysicsSprite()
 : _ignoreBodyRotation(false)
 , _CPBody(nullptr)
-, _pB2Body(nullptr)
+, _pB2Body(b2_nullBodyId)
 , _PTMRatio(0.0f)
 , _syncTransform(nullptr)
 {}
@@ -227,22 +227,22 @@ void PhysicsSprite::setCPBody(cpBody *pBody)
 #endif
 }
 
-b2Body* PhysicsSprite::getB2Body() const
+b2BodyId PhysicsSprite::getB2Body() const
 {
 #if CC_ENABLE_BOX2D_INTEGRATION
     return _pB2Body;
 #else
     CCASSERT(false, "Can't call box2d methods when Box2d is disabled");
-    return nullptr;
+    return b2_nullBodyId;
 #endif
 }
 
-void PhysicsSprite::setB2Body(b2Body *pBody)
+void PhysicsSprite::setB2Body(b2BodyId body)
 {
 #if CC_ENABLE_BOX2D_INTEGRATION
-    _pB2Body = pBody;
+    _pB2Body = body;
 #else
-    CC_UNUSED_PARAM(pBody);
+    CC_UNUSED_PARAM(body);
     CCASSERT(false, "Can't call box2d methods when Box2d is disabled");
 #endif
 }
@@ -281,7 +281,8 @@ const Vec2& PhysicsSprite::getPosFromPhysics() const
 
 #elif CC_ENABLE_BOX2D_INTEGRATION
 
-    b2Vec2 pos = _pB2Body->GetPosition();
+    CCASSERT(!B2_IS_NULL(_pB2Body), "Box2D body is not set");
+    b2Vec2 pos = b2Body_GetPosition(_pB2Body);
     float x = pos.x * _PTMRatio;
     float y = pos.y * _PTMRatio;
     s_physicPosion.set(x,y);
@@ -298,8 +299,9 @@ void PhysicsSprite::setPosition(float x, float y)
 
 #elif CC_ENABLE_BOX2D_INTEGRATION
     
-    float angle = _pB2Body->GetAngle();
-    _pB2Body->SetTransform(b2Vec2(x / _PTMRatio, y / _PTMRatio), angle);
+    CCASSERT(!B2_IS_NULL(_pB2Body), "Box2D body is not set");
+    float angle = b2Rot_GetAngle(b2Body_GetRotation(_pB2Body));
+    b2Body_SetTransform(_pB2Body, {x / _PTMRatio, y / _PTMRatio}, b2MakeRot(angle));
 #endif
 }
 
@@ -332,7 +334,7 @@ float PhysicsSprite::getRotation() const
 #elif CC_ENABLE_BOX2D_INTEGRATION
     
     return (_ignoreBodyRotation ? Sprite::getRotation() :
-            CC_RADIANS_TO_DEGREES(_pB2Body->GetAngle()));
+            CC_RADIANS_TO_DEGREES(b2Rot_GetAngle(b2Body_GetRotation(_pB2Body))));
 #else
     return 0.0f;
 #endif
@@ -355,9 +357,10 @@ void PhysicsSprite::setRotation(float fRotation)
 #elif CC_ENABLE_BOX2D_INTEGRATION
     else
     {
-        b2Vec2 p = _pB2Body->GetPosition();
+        CCASSERT(!B2_IS_NULL(_pB2Body), "Box2D body is not set");
+        b2Vec2 p = b2Body_GetPosition(_pB2Body);
         float radians = CC_DEGREES_TO_RADIANS(fRotation);
-        _pB2Body->SetTransform(p, radians);
+        b2Body_SetTransform(_pB2Body, p, b2MakeRot(radians));
     }
 #endif
 
@@ -391,7 +394,8 @@ void PhysicsSprite::syncPhysicsTransform() const
     
 #elif CC_ENABLE_BOX2D_INTEGRATION
     
-    b2Vec2 pos  = _pB2Body->GetPosition();
+    CCASSERT(!B2_IS_NULL(_pB2Body), "Box2D body is not set");
+    b2Vec2 pos  = b2Body_GetPosition(_pB2Body);
     
     float x = pos.x * _PTMRatio;
     float y = pos.y * _PTMRatio;
@@ -403,7 +407,7 @@ void PhysicsSprite::syncPhysicsTransform() const
     }
     
     // Make matrix
-    float radians = _pB2Body->GetAngle();
+    float radians = b2Rot_GetAngle(b2Body_GetRotation(_pB2Body));
     float c = cosf(radians);
     float s = sinf(radians);
     

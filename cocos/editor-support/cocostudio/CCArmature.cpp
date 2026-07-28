@@ -37,7 +37,7 @@ THE SOFTWARE.
 #include "base/CCDirector.h"
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
-#include "Box2D/Box2D.h"
+#include "box2d/box2d.h"
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
 #include "chipmunk/chipmunk.h"
 #endif
@@ -90,6 +90,9 @@ Armature::Armature()
     , _parentBone(nullptr)
     , _armatureTransformDirty(true)
     , _animation(nullptr)
+#if ENABLE_PHYSICS_BOX2D_DETECT
+    , _body(b2_nullBodyId)
+#endif
 {
 }
 
@@ -643,20 +646,20 @@ void Armature::drawContour()
 #endif
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
-b2Body *Armature::getBody() const
+b2BodyId Armature::getBody() const
 {
     return _body;
 }
 
-void Armature::setBody(b2Body *body)
+void Armature::setBody(b2BodyId body)
 {
-    if (_body == body)
+    if (_body.index1 == body.index1 && _body.world0 == body.world0 && _body.generation == body.generation)
     {
         return;
     }
 
     _body = body;
-    _body->SetUserData(this);
+    b2Body_SetUserData(_body, this);
 
     for(auto& object : _children)
     {
@@ -676,16 +679,15 @@ void Armature::setBody(b2Body *body)
     }
 }
 
-b2Fixture *Armature::getShapeList()
+b2ShapeId Armature::getShapeList()
 {
-    if (_body)
+    if (!B2_IS_NULL(_body) && b2Body_GetShapeCount(_body) > 0)
     {
-        return _body->GetFixtureList();
+        b2ShapeId shape = b2_nullShapeId;
+        b2Body_GetShapes(_body, &shape, 1);
+        return shape;
     }
-    else
-    {
-        return nullptr;
-    }
+    return b2_nullShapeId;
 }
 
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT

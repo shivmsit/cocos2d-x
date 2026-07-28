@@ -109,7 +109,9 @@ void DisplayFactory::updateDisplay(Bone *bone, float dt, bool dirty)
         {
             do
             {
-#if ENABLE_PHYSICS_BOX2D_DETECT || ENABLE_PHYSICS_CHIPMUNK_DETECT
+#if ENABLE_PHYSICS_BOX2D_DETECT
+                CC_BREAK_IF(B2_IS_NULL(detector->getBody()));
+#elif ENABLE_PHYSICS_CHIPMUNK_DETECT
                 CC_BREAK_IF(!detector->getBody());
 #endif
 

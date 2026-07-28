@@ -34,8 +34,10 @@ THE SOFTWARE.
 #include "editor-support/cocostudio/CCArmatureDataManager.h"
 #include "editor-support/cocostudio/CocosStudioExport.h"
 #include "math/CCMath.h"
+#if ENABLE_PHYSICS_BOX2D_DETECT
+#include "box2d/id.h"
+#endif
 
-class b2Body;
 struct cpBody;
 
 namespace cocostudio {
@@ -214,17 +216,17 @@ public:
     virtual BatchNode *getBatchNode() const { return _batchNode; }
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
-    virtual b2Fixture *getShapeList();
+    virtual b2ShapeId getShapeList();
     /**
      *  @js NA
      *  @lua NA
      */
-    virtual void setBody(b2Body *body);
+    virtual void setBody(b2BodyId body);
     /**
      *  @js NA
      *  @lua NA
      */
-    virtual b2Body *getBody() const;
+    virtual b2BodyId getBody() const;
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
     /**
      *  @js NA
@@ -274,7 +276,7 @@ protected:
     ArmatureAnimation *_animation;
 
 #if ENABLE_PHYSICS_BOX2D_DETECT
-    b2Body *_body;
+    b2BodyId _body;
 #elif ENABLE_PHYSICS_CHIPMUNK_DETECT
     cpBody *_body;
 #endif
