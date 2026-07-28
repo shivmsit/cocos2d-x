@@ -22,38 +22,33 @@
  THE SOFTWARE.
  ****************************************************************************/
 
-#ifndef _BOX2D_VIEW_H_
-#define _BOX2D_VIEW_H_
+#ifndef _BOX2D_ADVANCED_TESTS_H_
+#define _BOX2D_ADVANCED_TESTS_H_
 
 #include "../BaseTest.h"
 #include "GLES-Render.h"
 #include "renderer/CCCustomCommand.h"
 
-DEFINE_TEST_SUITE(Box2dTestBedSuite);
+#include "car.h"
+#include "donut.h"
+#include "human.h"
 
-enum class Box2dTestBedScenario
+#include <functional>
+
+enum class Box2dAdvancedScenario
 {
-    Pyramid,
-    Friction,
-    Restitution,
-    Bridge,
-    CapsuleStack,
+    Car,
+    Ragdoll,
+    SoftBody,
 };
 
-/**
- * Cocos2d-x host for Box2D 3.x testbed scenarios.
- *
- * The old cpp-tests testbed was coupled to Box2D 2.x C++ classes. This class
- * keeps the Cocos navigation and rendering layer while each scenario uses the
- * Box2D 3.x handle-based C API directly.
- */
-class Box2dTestBed : public TestCase
+class Box2dAdvancedTest : public TestCase
 {
 public:
-    static Box2dTestBed* create(Box2dTestBedScenario scenario);
+    static Box2dAdvancedTest* create(Box2dAdvancedScenario scenario);
 
-    explicit Box2dTestBed(Box2dTestBedScenario scenario);
-    ~Box2dTestBed() override;
+    explicit Box2dAdvancedTest(Box2dAdvancedScenario scenario);
+    ~Box2dAdvancedTest() override;
 
     bool init() override;
     std::string title() const override;
@@ -63,22 +58,52 @@ public:
 
 private:
     void createWorld();
-    void createPyramid();
-    void createFriction();
-    void createRestitution();
-    void createBridge();
-    void createCapsuleStack();
-    void createGroundSegment(b2Vec2 point1, b2Vec2 point2, float friction = 0.6f);
+    void createHeader();
+    void createControls();
     void createDebugButton();
+    void addControl(const std::string& text, const cocos2d::Vec2& position,
+                    const std::function<void(cocos2d::Ref*)>& callback);
+    b2BodyId createGroundSegment(b2Vec2 point1, b2Vec2 point2, float friction = 0.7f);
+
+    void createCar();
+    void createRagdoll();
+    void createSoftBody();
+
+    void setCarSpeed(float speed);
+    void resetCar(cocos2d::Ref* = nullptr);
+    void tossRagdoll(cocos2d::Ref* = nullptr);
+    void toggleRagdollJoints(cocos2d::Ref* = nullptr);
+    void resetRagdoll(cocos2d::Ref* = nullptr);
+    void kickSoftBody(cocos2d::Ref* = nullptr);
+    void toggleSoftBody(cocos2d::Ref* = nullptr);
+    void resetSoftBody(cocos2d::Ref* = nullptr);
+
+    void updateCar(float dt);
+    void updateRagdoll();
+    void updateSoftBody();
     void toggleDebug(cocos2d::Ref*);
     void onDebugDraw(cocos2d::Mat4 transform);
 
-    Box2dTestBedScenario _scenario;
+    Box2dAdvancedScenario _scenario;
     b2WorldId _world;
     GLESDebugDraw _debugDraw;
     cocos2d::Label* _debugLabel;
+    cocos2d::Label* _infoLabel;
     cocos2d::CustomCommand _debugCommand;
     bool _debugEnabled;
+    float _cameraX;
+
+    Car _car;
+    b2Vec2 _carStart;
+    float _carScale;
+    float _carSpeed;
+
+    Human _human;
+    bool _ragdollTense;
+    float _ragdollDirection;
+
+    Donut _donut;
+    float _softBodyHertz;
 };
 
 #endif

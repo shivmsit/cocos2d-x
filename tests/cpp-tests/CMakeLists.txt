@@ -356,68 +356,28 @@ if(WINDOWS OR MACOSX OR LINUX)
          )
 endif()
 
+# The original TestBed scenes target Box2D 2.x. Box2dView hosts the scenarios
+# already ported to the Box2D 3.x handle API; remaining legacy scenes stay out
+# of the build until they are migrated.
 list(APPEND GAME_HEADER
-     Classes/Box2DTest/Box2dTest.cpp
-     Classes/Box2DTestBed/Test.h
-     Classes/Box2DTestBed/Tests/Chain.h
-     Classes/Box2DTestBed/Tests/Confined.h
-     Classes/Box2DTestBed/Tests/PolyCollision.h
-     Classes/Box2DTestBed/Tests/EdgeTest.h
-     Classes/Box2DTestBed/Tests/ApplyForce.h
-     Classes/Box2DTestBed/Tests/Gears.h
-     Classes/Box2DTestBed/Tests/SliderCrank.h
-     Classes/Box2DTestBed/Tests/ContinuousTest.h
-     Classes/Box2DTestBed/Tests/Revolute.h
-     Classes/Box2DTestBed/Tests/TheoJansen.h
-     Classes/Box2DTestBed/Tests/Bridge.h
-     Classes/Box2DTestBed/Tests/CollisionProcessing.h
-     Classes/Box2DTestBed/Tests/DistanceTest.h
-     Classes/Box2DTestBed/Tests/PolyShapes.h
-     Classes/Box2DTestBed/Tests/TimeOfImpact.h
-     Classes/Box2DTestBed/Tests/ConveyorBelt.h
-     Classes/Box2DTestBed/Tests/Tiles.h
-     Classes/Box2DTestBed/Tests/BulletTest.h
-     Classes/Box2DTestBed/Tests/MotorJoint.h
-     Classes/Box2DTestBed/Tests/Car.h
-     Classes/Box2DTestBed/Tests/Mobile.h
-     Classes/Box2DTestBed/Tests/VaryingFriction.h
-     Classes/Box2DTestBed/Tests/Rope.h
-     Classes/Box2DTestBed/Tests/SensorTest.h
-     Classes/Box2DTestBed/Tests/Pyramid.h
-     Classes/Box2DTestBed/Tests/VaryingRestitution.h
-     Classes/Box2DTestBed/Tests/RopeJoint.h
-     Classes/Box2DTestBed/Tests/VerticalStack.h
-     Classes/Box2DTestBed/Tests/MobileBalanced.h
-     Classes/Box2DTestBed/Tests/CompoundShapes.h
-     Classes/Box2DTestBed/Tests/CollisionFiltering.h
-     Classes/Box2DTestBed/Tests/Pulleys.h
-     Classes/Box2DTestBed/Tests/Breakable.h
-     Classes/Box2DTestBed/Tests/BodyTypes.h
-     Classes/Box2DTestBed/Tests/DumpShell.h
-     Classes/Box2DTestBed/Tests/ShapeEditing.h
-     Classes/Box2DTestBed/Tests/SphereStack.h
-     Classes/Box2DTestBed/Tests/OneSidedPlatform.h
-     Classes/Box2DTestBed/Tests/AddPair.h
-     Classes/Box2DTestBed/Tests/Pinball.h
-     Classes/Box2DTestBed/Tests/Tumbler.h
-     Classes/Box2DTestBed/Tests/RayCast.h
-     Classes/Box2DTestBed/Tests/ConvexHull.h
-     Classes/Box2DTestBed/Tests/EdgeShapes.h
-     Classes/Box2DTestBed/Tests/Prismatic.h
-     Classes/Box2DTestBed/Tests/Dominos.h
-     Classes/Box2DTestBed/Tests/Web.h
-     Classes/Box2DTestBed/Tests/CharacterCollision.h
-     Classes/Box2DTestBed/Tests/DynamicTreeTest.h
-     Classes/Box2DTestBed/Tests/Cantilever.h
+     Classes/Box2DTest/Box2dTest.h
+     Classes/Box2DTestBed/Box2dAdvancedTests.h
+     Classes/Box2DTestBed/Box2dGameplayTests.h
+     Classes/Box2DTestBed/Box2dLearningTests.h
      Classes/Box2DTestBed/Box2dView.h
      Classes/Box2DTestBed/GLES-Render.h
      )
 list(APPEND GAME_SOURCE
      Classes/Box2DTest/Box2dTest.cpp
+     Classes/Box2DTestBed/Box2dAdvancedTests.cpp
+     Classes/Box2DTestBed/Box2dGameplayTests.cpp
+     Classes/Box2DTestBed/Box2dLearningTests.cpp
      Classes/Box2DTestBed/Box2dView.cpp
      Classes/Box2DTestBed/GLES-Render.cpp
-     Classes/Box2DTestBed/Test.cpp
-     Classes/Box2DTestBed/TestEntries.cpp
+     ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/samples/car.cpp
+     ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/samples/donut.cpp
+     ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/shared/human.c
+     ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/shared/random.c
      )
 
 list(APPEND GAME_HEADER
@@ -459,7 +419,10 @@ endif()
 
 target_link_libraries(${APP_NAME} cocos2d)
 target_include_directories(${APP_NAME}
-        PRIVATE Classes
+        PRIVATE
+        Classes
+        ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/samples
+        ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/shared
 )
 
 # mark app resources
