@@ -23,17 +23,45 @@
 # THE SOFTWARE.
 # ****************************************************************************/
 
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.16)
 
 set(APP_NAME HelloCpp)
 
 project(${APP_NAME})
 
-set(COCOS2DX_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cocos2d)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CocosEngine.cmake)
+cocos2dx_resolve_root(COCOS2DX_ROOT_PATH)
 set(CMAKE_MODULE_PATH ${COCOS2DX_ROOT_PATH}/cmake/Modules/)
 
 include(CocosBuildSet)
-add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos ${ENGINE_BINARY_PATH}/cocos/core)
+
+if(ANDROID OR MACOSX)
+    set(_cocos2dx_default_engine_mode PREBUILT)
+else()
+    # Prebuilt builders for the remaining platforms will be added separately.
+    set(_cocos2dx_default_engine_mode SOURCE)
+endif()
+set(COCOS2DX_ENGINE_MODE "${_cocos2dx_default_engine_mode}" CACHE STRING
+    "How the game consumes cocos2d-x: PREBUILT or SOURCE")
+set_property(CACHE COCOS2DX_ENGINE_MODE PROPERTY STRINGS PREBUILT SOURCE)
+string(TOUPPER "${COCOS2DX_ENGINE_MODE}" COCOS2DX_ENGINE_MODE)
+
+if(COCOS2DX_ENGINE_MODE STREQUAL "PREBUILT")
+    if(NOT ANDROID AND NOT MACOSX)
+        message(FATAL_ERROR
+            "Reusable cocos2d-x prebuilts currently support macOS and Android. "
+            "Use -DCOCOS2DX_ENGINE_MODE=SOURCE on this platform.")
+    endif()
+    add_subdirectory(${COCOS2DX_ROOT_PATH}/prebuilt
+                     ${ENGINE_BINARY_PATH}/cocos/prebuilt)
+elseif(COCOS2DX_ENGINE_MODE STREQUAL "SOURCE")
+    add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos
+                     ${ENGINE_BINARY_PATH}/cocos/core)
+else()
+    message(FATAL_ERROR
+        "Invalid COCOS2DX_ENGINE_MODE='${COCOS2DX_ENGINE_MODE}'. "
+        "Expected PREBUILT or SOURCE.")
+endif()
 
 # record sources, headers, resources...
 set(GAME_SOURCE)
@@ -121,7 +149,11 @@ else()
     target_link_libraries(${APP_NAME} -Wl,--whole-archive cpp_android_spec -Wl,--no-whole-archive)
 endif()
 
-target_link_libraries(${APP_NAME} cocos2d)
+if(COCOS2DX_ENGINE_MODE STREQUAL "PREBUILT")
+    use_prebuilt_cocos2dx(${APP_NAME})
+else()
+    target_link_libraries(${APP_NAME} cocos2d)
+endif()
 target_include_directories(${APP_NAME}
         PRIVATE Classes
         PRIVATE ${COCOS2DX_ROOT_PATH}/cocos/audio/include/

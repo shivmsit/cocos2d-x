@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
 }
 
+def cocos2dxRootPath = gradle.ext.cocos2dxRootPath
+
 android {
     namespace 'org.cocos2dx.hellocpp'
     compileSdk PROP_COMPILE_SDK_VERSION.toInteger()
@@ -18,7 +20,8 @@ android {
         externalNativeBuild {
             cmake {
                 targets 'MyGame'
-                arguments "-DANDROID_STL=c++_static"
+                arguments "-DANDROID_STL=c++_static",
+                          "-DCOCOS2DX_ROOT_PATH=${cocos2dxRootPath}"
                 cppFlags "-frtti -fexceptions -fsigned-char"
             }
         }
