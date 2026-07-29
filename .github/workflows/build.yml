@@ -42,7 +42,7 @@ jobs:
 
       - name: Generate C++ project
         run: |
-          python3 tools/cocos2d-console/bin/cocos.py new CIGame \
+          python3 tools/cocos2d-console/bin/cocos.py --agreement n new CIGame \
             -p org.cocos2dx.cigame \
             -l cpp \
             -d "$RUNNER_TEMP"
@@ -81,7 +81,7 @@ jobs:
         env:
           NDK_VERSION: 30.0.15729638
         run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
             "platforms;android-36" \
             "build-tools;36.0.0" \
             "cmake;3.22.1" \
@@ -99,7 +99,7 @@ jobs:
 
       - name: Generate C++ project
         run: |
-          python3 tools/cocos2d-console/bin/cocos.py new CIGame \
+          python3 tools/cocos2d-console/bin/cocos.py --agreement n new CIGame \
             -p org.cocos2dx.cigame \
             -l cpp \
             -d "$RUNNER_TEMP"
