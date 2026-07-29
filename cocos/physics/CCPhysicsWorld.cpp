@@ -29,6 +29,10 @@
 #include <climits>
 
 #include "chipmunk/chipmunk_private.h"
+extern "C"
+{
+#include "chipmunk/cpHastySpace.h"
+}
 #include "physics/CCPhysicsBody.h"
 #include "physics/CCPhysicsShape.h"
 #include "physics/CCPhysicsContact.h"
