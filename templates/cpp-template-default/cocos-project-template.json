@@ -20,7 +20,7 @@
                "proj.win32/PROJECT_NAME.sln",
                "proj.win32/main.cpp",
                "proj.android/settings.gradle",
-               "proj.android/app/res/values/strings.xml",
+               "proj.android/app/src/main/res/values/strings.xml",
                "proj.ios_mac/ios/main.m",
                "proj.ios_mac/ios/Prefix.pch",
                "proj.ios_mac/PROJECT_NAME.xcodeproj/project.pbxproj",
@@ -31,7 +31,7 @@
             "src_package_name":"org.cocos2dx.hellocpp",
             "files":[
                "proj.android/app/build.gradle",
-               "proj.android/app/AndroidManifest.xml"
+               "proj.android/app/src/main/AndroidManifest.xml"
             ]
          },
          "project_replace_mac_bundleid": {
@@ -66,11 +66,10 @@
             },
 
             {
-               "file_path": "proj.android/app/AndroidManifest.xml",
+               "file_path": "proj.android/app/src/main/AndroidManifest.xml",
                "pattern": "android:screenOrientation=\\\".*\\\"",
                "replace_string": "android:screenOrientation=\"portrait\""
             }
          ]
       }
 }
-

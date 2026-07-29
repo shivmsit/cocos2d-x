@@ -1,5 +1,20 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'CppTests'
 include ':libcocos2dx'
-project(':libcocos2dx').projectDir = new File(settingsDir, '../../../cocos/platform/android/libcocos2dx')
-include ':CppTests'
-project(':CppTests').projectDir = new File(settingsDir, 'app')
-rootProject.name = "cpp-tests"
+project(':libcocos2dx').projectDir = file('../../../cocos/platform/android/libcocos2dx')
+include ':app'

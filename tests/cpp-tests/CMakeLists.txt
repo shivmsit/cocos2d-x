@@ -31,7 +31,7 @@ if(ANDROID)
          )
     list(APPEND GAME_SOURCE
          Classes/JNITest/JNITest.cpp
-         proj.android/app/jni/main.cpp
+         proj.android/app/src/main/cpp/main.cpp
          )
 elseif(LINUX)
     list(APPEND GAME_SOURCE
@@ -374,10 +374,10 @@ list(APPEND GAME_SOURCE
      Classes/Box2DTestBed/Box2dLearningTests.cpp
      Classes/Box2DTestBed/Box2dView.cpp
      Classes/Box2DTestBed/GLES-Render.cpp
-     ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/samples/car.cpp
-     ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/samples/donut.cpp
-     ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/shared/human.c
-     ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/shared/random.c
+     ${COCOS2DX_ROOT_PATH}/external/Box2D/samples/car.cpp
+     ${COCOS2DX_ROOT_PATH}/external/Box2D/samples/donut.cpp
+     ${COCOS2DX_ROOT_PATH}/external/Box2D/shared/human.c
+     ${COCOS2DX_ROOT_PATH}/external/Box2D/shared/random.c
      )
 
 list(APPEND GAME_HEADER
@@ -421,8 +421,8 @@ target_link_libraries(${APP_NAME} cocos2d)
 target_include_directories(${APP_NAME}
         PRIVATE
         Classes
-        ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/samples
-        ${COCOS2DX_ROOT_PATH}/external/Box2D/upstream/shared
+        ${COCOS2DX_ROOT_PATH}/external/Box2D/samples
+        ${COCOS2DX_ROOT_PATH}/external/Box2D/shared
 )
 
 # mark app resources
