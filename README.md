@@ -4,14 +4,9 @@
 cocos2d-x
 =========
 
-|Win32|Others|
-| ----|------|
-[![Build status](https://ci.appveyor.com/api/projects/status/nlgirox464j6ldg5/branch/v3?svg=true)](https://ci.appveyor.com/project/minggo/cocos2d-x/branch/v3)|[![Build Status](https://travis-ci.org/cocos2d/cocos2d-x.svg?branch=v3)](https://travis-ci.org/cocos2d/cocos2d-x)
-
-
-[cocos2d-x][1] is a multi-platform framework for building 2d games, interactive books, demos and other graphical applications.
-It is based on [cocos2d-iphone][2], but instead of using Objective-C, it uses C++.
-It works on iOS, Android, OS X, Windows, Linux and Web platforms.
+[cocos2d-x][1] is a multi-platform framework for building 2D games, interactive
+books, demos and other graphical applications. It is based on
+[cocos2d-iphone][2], but instead of using Objective-C, it uses C++.
 
 **Cocos2d-x Framework Architecture**:
 
@@ -24,113 +19,168 @@ cocos2d-x is:
   * Easy to use
   * Community supported
 
-Git user attention
------------------------
+Project maintenance
+-------------------
 
-1. Clone the repo from GitHub.
+The [original Cocos2d-x project][3] is no longer actively maintaining the
+native 3.x engine. This repository preserves its history and continues
+development for teams that value a lightweight, source-available C++ game
+engine. It focuses on current toolchains, source-built dependencies, prebuilt
+engine libraries, compatibility fixes and support for existing games.
 
-         $ git clone https://github.com/cocos2d/cocos2d-x.git
+This is an independent community-maintained project and is not an official
+Cocos product. See the [changelog](CHANGELOG) for changes made since the
+original 3.17.2 release.
 
-2. After cloning the repo, please execute `download-deps.py` to download and install dependencies.
+Git checkout
+------------
 
-         $ cd cocos2d-x
-         cocos2d-x $ python download-deps.py
+Clone this repository together with its tool and test-resource submodules:
 
-3. After running `download-deps.py`.
+```sh
+git clone --recursive --branch v3.18 \
+  https://github.com/shivmsit/cocos2d-x.git
+cd cocos2d-x
+```
 
-         cocos2d-x $ git submodule update --init
+All third-party source required by the supported macOS and Android builds is
+versioned in the `external/` submodule. There is no dependency-download step
+and `download-deps.py` is no longer used.
 
-Download stable versions
------------------------
+If the repository was cloned without `--recursive`, initialize its remaining
+submodules afterwards:
 
-* [Cocos2d-x stable versions](http://www.cocos2d-x.org/download)
-* [Cocos2d-JS Lite version](http://www.cocos2d-x.org/filecenter/jsbuilder)
+```sh
+git submodule update --init --recursive
+```
+
+The Android SDK/NDK and platform compilers remain normal prerequisites supplied
+by the developer machine.
 
 How to start a new game
 -----------------------
 
-1. Download the code from [cocos2d download site][4] or clone this repo (instructions above)
-2. Run `setup.py`
-3. Run the `cocos` script
+```sh
+cd cocos2d-x
+python3 setup.py
+source FILE_TO_SAVE_SYSTEM_VARIABLE
+cocos new MyGame -p com.your_company.mygame -l cpp -d NEW_PROJECTS_DIR
+cd NEW_PROJECTS_DIR/MyGame
+```
 
-Example:
+Use `-l lua` to create a Lua project.
 
-    $ cd cocos2d-x
-    $ ./setup.py
-    $ source FILE_TO_SAVE_SYSTEM_VARIABLE
-    $ cocos new MyGame -p com.your_company.mygame -l cpp -d NEW_PROJECTS_DIR
-    $ cd NEW_PROJECTS_DIR/MyGame
+New games reuse this engine checkout instead of storing another full copy,
+keeping project directories smaller and engine updates in one place.
 
-You can also create a JS project or Lua project with `-l js` or `-l lua`.
+Building prebuilt libraries for faster builds
+---------------------------------------------
 
-### Build and run a new project for Android ###
+Generated C++ projects use prebuilt engine libraries by default on macOS and
+Android. Build the engine once for each target and configuration, then reuse it
+across game projects. If a matching library does not exist, the first project
+build creates it automatically.
 
-Cocos2d-x supports Android Studio. Simple open the `proj.android` directory from within the Android Studio environment. More information can be found in our [documentation](http://www.cocos2d-x.org/docs/cocos2d-x/en/installation/Android-Studio.html).
-   
-### Build and run a new project for iOS ###
+macOS Debug:
 
-    $ cocos run -p ios
+```sh
+./prebuilt/build-prebuilt.sh \
+  --platform macosx \
+  --arch "$(uname -m)" \
+  --config Debug
+```
 
-### Build and run a new project for OSX ###
+Android arm64 Debug:
 
-    $ cocos run -p mac
+```sh
+./prebuilt/build-prebuilt.sh \
+  --platform android \
+  --arch arm64-v8a \
+  --api 24 \
+  --config Debug \
+  --ndk "$ANDROID_NDK_HOME"
+```
 
-### Build and run a new project for Linux ###
+Repeat the Android command for each ABI the game ships. Debug builds retain the
+native information needed to diagnose crashes.
 
-If you never run cocos2d-x on Linux, you need to install all dependencies by the
-script in **cocos2d/build/install-deps-linux.sh**
+Set `COCOS2DX_BUILD_PREBUILT_IF_MISSING=OFF` to require an explicit prebuild,
+or use `-DCOCOS2DX_ENGINE_MODE=SOURCE` to compile the engine with the game. See
+the [prebuilt library guide](prebuilt/README.md) for more information.
 
-    $ cd cocos2d-x/build
-    $ ./install-deps-linux.sh
+Build and run a new project for Android
+---------------------------------------
 
-Then
+Open the generated `proj.android` directory in Android Studio, or build it from
+the command line:
 
-    $ cd NEW_PROJECTS_DIR/MyGame
-    $ cocos run -p linux
+```sh
+cd proj.android
+./gradlew assembleDebug
+```
 
-Run
+Build and run a new project for macOS
+-------------------------------------
 
-    $ bin/MyGame
+From the generated game directory:
 
-### Build and run new project for win32 ###
+```sh
+cmake -S . -B build/macos-debug \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_OSX_ARCHITECTURES="$(uname -m)"
+cmake --build build/macos-debug --parallel
+```
 
-    $ cocos run -p win32
+To generate an Xcode project:
 
-### Build and run new project for web ###
+```sh
+cmake -S . -B build/xcode -G Xcode
+open build/xcode/*.xcodeproj
+```
 
-Only JS project can be published to web platforms, so you will need to create a JS project first:
+Windows
+-------
 
-    $ cocos new -l js WebGame
+Windows support is **work in progress**.
+`prebuilt/build-prebuilt.sh` is a POSIX shell script for macOS and Android
+cross-compilation; it is not the Windows build interface. A native
+PowerShell/CMake entrypoint and prebuilt Windows library still need to
+be implemented and tested.
 
-Then you can run your game in a web browser:
+The inherited CMake source build can be used experimentally with Visual Studio
+2022:
 
-    $ cocos run -p web
+```powershell
+cmake -S . -B build/windows -G "Visual Studio 17 2022" -A x64 `
+  -DCOCOS2DX_ENGINE_MODE=SOURCE
+cmake --build build/windows --config Debug
+```
 
-Or you can publish your game to `publish/html5/` folder:
-
-    $ cocos run -p web -m release [--advanced]
+Windows builds are not yet part of the validated release workflow. The
+original iOS and Linux implementations also remain in the source tree but have
+not yet been revalidated with all updated dependencies.
 
 Using CMake
---------------------------------
+-----------
 
-Cocos2d-x supports CMake, a cross-platform build system. Example usage:
+Cocos2d-x uses CMake to build the engine, its external libraries, tests and
+generated games. Use out-of-source build directories so generated files do not
+modify the checkout.
 
-    $ cd cocos2d-x
-    $ mkdir cmake-build && cd cmake-build
-    $ cmake ..
-
-* [Detail CMake Guide](cmake/README.md)
-
-Documentations and samples
+Documentation
 -------------
-* [All Docs in a single place!](http://cocos2d-x.org/docs/)
-* [Online API Reference](http://cocos2d-x.org/docs/api-ref/index.html) _Note that Cocos2d-x, Cocos2d-JS and Cocos Creator have different API set_
-* [Programmers Guide](http://cocos2d-x.org/docs/programmers-guide/2/index.html)
-* [Latest Release Note](https://github.com/cocos2d/cocos2d-x/blob/v3/docs/RELEASE_NOTES.md)
-* [Changelog](https://github.com/cocos2d/cocos2d-x/blob/v3/CHANGELOG)
+
+* [Prebuilt library guide](prebuilt/README.md)
+* [Third-party dependency versions](external/SOURCES.md)
+* [Release notes](docs/RELEASE_NOTES.md)
+* [Changelog](CHANGELOG)
+
+The changelog summarizes the major updates and fixes made in this maintained
+version.
 
 Main features
 -------------
+
    * Scene management (workflow)
    * Transitions between scenes
    * Sprites and Sprite Sheets
@@ -141,7 +191,7 @@ Main features
      * Ease Actions: Exp, Sin, Cubic, Elastic, etc.
      * Misc actions: CallFunc, OrbitCamera, Follow, Tween
    * Basic menus and buttons
-   * Integrated with physics engines: [Box2d][5] and [Chipmunk][6]
+   * Integrated with physics engines: [Box2D][5] and [Chipmunk][6]
    * Particle system
    * Skeleton Animations: [Spine][7] and Armature support
    * Fonts:
@@ -155,157 +205,93 @@ Main features
    * Touch/Mouse/Keyboard on desktop
    * Sound Engine support (CocosDenshion library) based on OpenAL
    * Integrated Slow motion/Fast forward
-   * Fast and compressed textures: PVR compressed and uncompressed textures, ETC1 compressed textures, and more
+   * Fast and compressed textures: PVR compressed and uncompressed textures,
+     ETC1 compressed textures, and more
    * Resolution Independent
-   * Language: C++, with Lua and JavaScript bindings
-   * Open Source Commercial Friendly(MIT): Compatible with open and closed source projects
+   * Language: C++, with Lua bindings
+   * Open Source Commercial Friendly (MIT): compatible with open and closed
+     source projects
    * OpenGL ES 2.0 (mobile) / OpenGL 2.1 (desktop) based
 
-Build Requirements
+Build requirements
 ------------------
 
-* Mac OS X 10.7+, Xcode 8+
-* or Ubuntu 14.04+, CMake 3.1+
-* or Windows 7+, VS 2015
-* Python 2.7.5+(NOT Python 3)
-* NDK r16+ is required to build Android games
-* Android Studio 3.0.0+ to build Android games(tested with 3.0.0)
-* JRE or JDK 1.6+ is required for web publishing
+* Git
+* CMake 3.22 or later
+* Python 3.13 or later for `setup.py` and the `cocos` console
+* A C/C++ compiler for the target platform
+* Current Xcode or Xcode Command Line Tools for macOS
+* JDK 17 or later for Android
+* Android SDK 36
+* Android API 24 or later
+* Android NDK `30.0.15729638`
+* Android CMake `3.22.1`
 
-Runtime Requirements
---------------------
-  * iOS 8.0+ for iPhone / iPad games
-  * Android 3.0.0+ for Android
-  * OS X v10.9+ for Mac games
-  * Windows 7+ for Win games
-  * Modern browsers and IE 9+ for web games
+The Android versions above are the tested defaults in generated projects and
+are configured in `proj.android/gradle.properties`.
 
-Running Tests
---------------------
+Running tests
+-------------
 
-Select the test you want from Xcode Scheme chooser.
+Build the macOS C++ and Lua test applications:
 
-* Cocos Console
-
-```
-// Enter cpp test folder
-cd tests/cpp-tests
-// Or enter js test folder
-cd tests/js-tests
-// Or enter lua test folder
-cd tests/lua-tests
-
-// Compile or run test case
-cocos compile -p ios|mac|android|win32|win8_1|metro|web -m debug|release
-cocos run -p ios|mac|android|win32|win8_1|metro|web -m debug|release
+```sh
+cmake -S . -B build-local/macos-tests \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_OSX_ARCHITECTURES="$(uname -m)"
+cmake --build build-local/macos-tests --parallel
 ```
 
-* For OS X / iOS
+Build the Android C++ tests:
 
-```
-$ cd cocos2d-x/build
-$ open cocos2d_tests.xcodeproj
-```
-
-* For Linux
-
-```
-$ cd cocos2d-x/build
-$ ./install-deps-linux.sh
-$ mkdir linux-build
-$ cd linux-build
-$ cmake ../..
+```sh
+cd tests/cpp-tests/proj.android
+./gradlew assembleDebug
 ```
 
-Run Samples
+Build the Android Lua tests:
 
-```
-$ bin/Debug/cpp-empty-test/cpp-empty-test
-or
-$ bin/Debug/lua-empty-test/lua-empty-test
-```
-
-> You may meet building errors when building libGLFW.so. It is because libGL.so directs to an error target, you should make it to direct to a correct one. `install-deps-linux.sh` only has to be run once.
-
-* For Windows
-
-Open the `cocos2d-x/build/cocos2d-win32.sln`
-
-* For Android
-
-```
-$ cd cocos2d-x/build
-$ python ./android-build.py cpp-empty-test -p 14
-$ adb install ../tests/cpp-empty-test/proj.android/bin/CppEmptyTest-debug.apk
+```sh
+cd tests/lua-tests/project/proj.android
+./gradlew assembleDebug
 ```
 
-Then click item on Android device to run tests. Available value of `-p` is the API level, cocos2d-x supports from level 14.
+`cpp-tests` is the primary engine behavior and compatibility suite. It includes
+the Chipmunk2D tests and the Box2D 3.1.1 examples added in this version.
 
-Or you can import the project located at `tests/cpp-empty-test/proj.android` using Android Studio 3.0.0+.
+Learning resources
+------------------
 
-Learning Resources
---------------------------------
-
-* [Programmers Guide](http://cocos2d-x.org/docs/programmers-guide/2/index.html)
-* [Sonar Systems Videos](https://www.youtube.com/user/sonarsystemslimited/search?query=cocos2d-x)
-* [Android Fundamentals](https://developer.android.com/guide/components/fundamentals.html)
-* [Make School Tutorials](https://www.makeschool.com/tutorials/)
-* [Games From Scratch](http://www.gamefromscratch.com/page/Cocos2d-x-CPP-Game-Programming-Tutorial-Series.aspx)
-* [Cocos2d sample games](https://github.com/cocos2d/cocos2d-x-samples)
-
-Spreading the word!
---------------------------------
-You can help us spread the word about cocos2d-x! We would surely appreciate it!
-
-* Talk about us on Facebook! Our [Facebook Page](https://www.facebook.com/cocos2dx/)
-* Tweet, Tweet! Our [Twitter](https://twitter.com/cocos2dx)
-* Read our [Blog](http://blog.cocos2d-x.org/) and promote it on your social media.
-* Become a [Regional Coordinator](http://discuss.cocos2d-x.org/t/we-need-regional-coordinators/24104)
-
-See what we are planning!
---------------------------------
-You can see exactly what we are planning to do with the Cocos family of products.
-
-* [Cocos2d-x roadmap](https://trello.com/b/Np6obnuE/cocos2d-x-roadmap)
+* [C++ coding style](docs/CODING_STYLE.md)
+* [Android fundamentals](https://developer.android.com/guide/components/fundamentals)
+* [Games From Scratch Cocos2d-x tutorials](http://www.gamefromscratch.com/page/Cocos2d-x-CPP-Game-Programming-Tutorial-Series.aspx)
+* [Historical Cocos2d-x documentation](https://github.com/cocos2d/cocos2d-x/tree/v3/docs)
 
 Where to get help
---------------------------------
+-----------------
 
-* [English Forums](http://discuss.cocos2d-x.org)
-* [中文社区](http://forum.cocos.com/c/cocos2d-x)
-* [Bug Tracker](https://github.com/cocos2d/cocos2d-x/issues)
-* [API Reference](http://cocos2d-x.org/docs/api-ref/index.html).
-* [Latest Release Note](https://github.com/cocos2d/cocos2d-x/blob/v3/docs/RELEASE_NOTES.md)
-* [Changelog](https://github.com/cocos2d/cocos2d-x/blob/v3/CHANGELOG)
-* IRC. We are in [Freenode](https://webchat.freenode.net/) in the _#cocos2d_ channel
-* `cpp-tests` project. This project is our basis for testing. Use this project to
-learn how we implement the functionality of the engine. This project is located in
-__cocos2d-x_root/build.__
+* [Bug Tracker](https://github.com/shivmsit/cocos2d-x/issues)
+* [Pull Requests](https://github.com/shivmsit/cocos2d-x/pulls)
+* `cpp-tests`, the primary source of working engine examples
 
-Contributing to the Project
---------------------------------
+When reporting a problem, include the target platform and architecture, build
+configuration, compiler and SDK versions, relevant logs and a minimal
+reproduction when possible.
 
-Cocos2d-x is licensed under the [MIT License](https://opensource.org/licenses/MIT). We welcome participation!
+Contributing to the project
+---------------------------
 
-Did you find a bug? Do you have feature request? Do you want to merge a feature?
+Cocos2d-x is licensed under the [MIT License](licenses/LICENSE_cocos2d-x.txt).
+Contributions are welcome through this repository's issue tracker and pull
+requests.
 
-  * [contributing to cocos2d-x][8]
+Keep third-party source and engine integration changes in separate
+commits when practical, update `external/SOURCES.md` when dependency revisions
+change and test the affected platform.
 
-Contact us
-----------
-
-   * Forum: [http://discuss.cocos2d-x.org][9]
-   * Twitter: [http://www.twitter.com/cocos2dx][10]
-   * Weibo: [http://t.sina.com.cn/cocos2dx][11]
-
-[1]: http://www.cocos2d-x.org "cocos2d-x"
-[2]: http://www.cocos2d-iphone.org "cocos2d for iPhone"
-[3]: http://www.cocos2d-x.org/projects/cocos2d-x/wiki/Download
-[4]: http://www.cocos2d-x.org/download/version#Cocos2d-x
-[5]: http://www.box2d.org "Box2D"
-[6]: http://www.chipmunk-physics.net "Chipmunk2D"
-[7]: http://esotericsoftware.com/ "http://esotericsoftware.com/"
-[8]: https://github.com/cocos2d/cocos2d-x/blob/v3/CONTRIBUTING.md
-[9]: http://discuss.cocos2d-x.org "http://discuss.cocos2d-x.org"
-[10]: http://www.twitter.com/cocos2dx "http://www.twitter.com/cocos2dx"
-[11]: http://t.sina.com.cn/cocos2dx "http://t.sina.com.cn/cocos2dx"
+[1]: https://github.com/cocos2d/cocos2d-x "Cocos2d-x"
+[2]: https://github.com/cocos2d/cocos2d-iphone "Cocos2d for iPhone"
+[3]: https://github.com/cocos2d/cocos2d-x "Original Cocos2d-x repository"
+[5]: https://box2d.org "Box2D"
+[6]: https://chipmunk-physics.net "Chipmunk2D"
+[7]: https://esotericsoftware.com/ "Spine"
