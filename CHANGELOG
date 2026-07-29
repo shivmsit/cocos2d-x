@@ -1,31 +1,29 @@
 cocos2d-x-3.18.0 Jul.29 2026
 
-[HIGHLIGHT]     Build: all dependencies required by macOS and Android are versioned in the `external/` submodule and built from source; dependency archives and the download step are retired
-[HIGHLIGHT]     Projects: generated games locate a shared Cocos2d-x checkout and automatically create or reuse its prebuilt engine libraries
-[HIGHLIGHT]     Android: updated templates and tests to Gradle 9.5, Android Gradle Plugin 9.3.1, SDK 36, API 24, NDK 30, CMake 3.22.1, and JDK 17+
-[HIGHLIGHT]     2D physics: upgraded Box2D to 3.1.1 and ported representative Box2D examples and debug drawing to `cpp-tests`
-[HIGHLIGHT]     Lua: upgraded to the rolling LuaJIT 2.1 runtime and source-built tolua++ and LuaSocket; restored the macOS Lua Simulator and modern Android Lua samples
+[HIGHLIGHT]     Build: dependencies are pinned in `external` and built from source
+[HIGHLIGHT]     Projects: generated games reuse shared engine prebuilts
+[HIGHLIGHT]     Android: updated Gradle, SDK, NDK, CMake, and JDK support
+[HIGHLIGHT]     Physics: upgraded Box2D to 3.1.1
+[HIGHLIGHT]     Lua: updated LuaJIT and restored the macOS Simulator
 
-[NEW]           Build: recorded every dependency revision and official source in `external/SOURCES.md`
-[NEW]           Box2D tests: added basic bodies, shapes, joints, contacts, ray casts, sensors, one-way platforms, bridge, chain, character collision, tumbler, ragdoll, and car examples
+[NEW]           Build: added a dependency source and revision manifest
+[NEW]           Box2D: added examples and debug rendering to `cpp-tests`
 
-[REFINE]        3rd: migrated external libraries to a consistent source layout with centralized CMake integration
-[REFINE]        3rd: updated GLFW, zlib, FreeType, JPEG, libpng, Bullet, Chipmunk2D, Recast/Detour, RapidJSON, WebP, TIFF, OpenSSL, curl, libuv, libwebsockets, tinyxml2, tinydir, xxHash, and Clipper2
-[REFINE]        3rd: replaced the old nested `external/lua` archive layout with top-level LuaJIT, tolua++, and LuaSocket sources
-[REFINE]        XML: replaced the remaining RapidXML engine usage with tinyxml2
-[REFINE]        Console: modernized Python support and removed obsolete dependency-download and packaging paths
-[REFINE]        Templates: modernized C++ and Lua Android layouts while preserving existing game orientation and size behavior
+[REFINE]        3rd: updated graphics, image, physics, network, and security libraries
+[REFINE]        XML: replaced RapidXML engine parsing with tinyxml2
+[REFINE]        Console: updated Python support and removed dependency downloads
+[REFINE]        Templates: modernized C++ and Lua Android projects
 
-[FIX]           Images: fixed JPEG runtime/header version mismatches after the source migration
-[FIX]           Chipmunk2D: fixed invalid zero-moment bodies, coordinate conversion, sprite placement, and Android test crashes
-[FIX]           Android: fixed source-built OpenSSL position-independent code and modern NDK compatibility
-[FIX]           External headers: exported the public include paths required by games linking the combined prebuilt archive
+[FIX]           Images: fixed JPEG runtime and header version mismatches
+[FIX]           Chipmunk2D: fixed body setup, coordinates, sprites, and Android crashes
+[FIX]           Android: fixed OpenSSL PIC and NDK compatibility
+[FIX]           Build: exported dependency headers to prebuilt consumers
 
 cocos2d-x-3.17.3 Jul.29 2026
 
-[HIGHLIGHT]     Maintenance: restored current macOS and Python 3 support while preserving Cocos2d-x 3.17 compatibility
+[HIGHLIGHT]     Maintenance: backward-compatible update for Cocos2d-x 3.17
 
-[NEW]           Build: added reusable Debug and Release prebuilt engine libraries for macOS and Android
+[NEW]           Build: added reusable macOS and Android engine prebuilts
 
 [REFINE]        Android: modernized the Gradle and CMake C++ project template
 
