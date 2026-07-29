@@ -4,6 +4,10 @@
 cocos2d-x
 =========
 
+| macOS | Android |
+| --- | --- |
+| [![macOS](https://github.com/shivmsit/cocos2d-x/actions/workflows/build.yml/badge.svg?branch=v3.18)](https://github.com/shivmsit/cocos2d-x/actions/workflows/build.yml?query=branch%3Av3.18) | [![Android](https://github.com/shivmsit/cocos2d-x/actions/workflows/android.yml/badge.svg?branch=v3.18)](https://github.com/shivmsit/cocos2d-x/actions/workflows/android.yml?query=branch%3Av3.18) |
+
 [cocos2d-x][1] is a multi-platform framework for building 2D games, interactive
 books, demos and other graphical applications. It is based on
 [cocos2d-iphone][2], but instead of using Objective-C, it uses C++.
