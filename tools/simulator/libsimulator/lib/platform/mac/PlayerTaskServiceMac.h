@@ -26,6 +26,8 @@
 #ifndef __PLAYER_TASK_SERVICE_MAC_H_
 #define __PLAYER_TASK_SERVICE_MAC_H_
 
+#import <Foundation/Foundation.h>
+
 #include <sstream>
 
 #include "PlayerTaskServiceProtocol.h"

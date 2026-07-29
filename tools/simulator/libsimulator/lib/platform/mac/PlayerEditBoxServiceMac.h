@@ -30,6 +30,8 @@
 #ifndef __player__EditBoxServiceMac__
 #define __player__EditBoxServiceMac__
 
+#import <AppKit/AppKit.h>
+
 #include "PlayerEditBoxServiceProtocol.h"
 
 

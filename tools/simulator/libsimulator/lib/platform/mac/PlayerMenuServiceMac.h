@@ -26,6 +26,8 @@
 #ifndef __PLAYER_MENU_SERVICE_MAC_H_
 #define __PLAYER_MENU_SERVICE_MAC_H_
 
+#import <AppKit/AppKit.h>
+
 #include <unordered_map>
 
 #include "cocos2d.h"

@@ -23,6 +23,8 @@
  ****************************************************************************/
 
 
+#import <Foundation/Foundation.h>
+
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <net/if.h>
