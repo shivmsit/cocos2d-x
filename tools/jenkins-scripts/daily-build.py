@@ -32,12 +32,6 @@ else:
 # this scripts in your local machine
 remote_build = 1
 
-def download_3rd_library():
-    #run download-deps.py
-    print("prepare to downloading ...")
-    os.system('python download-deps.py -r no')
-
-
 def sync_remote_repo():
     #reset path to workspace root
     os.system("cd " + workspace)
@@ -112,8 +106,6 @@ def main():
     if remote_build == 1:
         #syntronize local git repository with remote and merge the PR
         sync_remote_repo()
-        #copy check_current_3rd_libs
-        download_3rd_library()
         #generate jsb and luabindings
         gen_scripting_bindings()
 

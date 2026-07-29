@@ -28,6 +28,7 @@ import os
 import sys
 import re
 import json
+import subprocess
 
 class CocosFileList:
     """
@@ -43,8 +44,10 @@ class CocosFileList:
         self.fileList_com=[]
         self.fileList_lua=[]
         self.fileList_js=[]
+        self.trackedFiles=set()
+        self.trackedDirs=set()
 
-        self.luaPath = ["cocos/scripting/lua-bindings", "external/lua", "tools/bindings-generator", "tools/tolua"]
+        self.luaPath = ["cocos/scripting/lua-bindings", "external/luajit", "external/tolua", "external/luasocket", "tools/bindings-generator", "tools/tolua"]
         self.jsPath = ["cocos/scripting/js-bindings", "external/spidermonkey", "tools/bindings-generator", "tools/tojs" ]
 
     def readIngoreFile(self, fileName):
@@ -74,6 +77,17 @@ class CocosFileList:
 
     def parseFileList(self, rootDir):
         self.rootDir = os.path.abspath(rootDir)
+        tracked = subprocess.check_output(
+            ["git", "ls-files", "-z"], cwd=self.rootDir)
+        if not isinstance(tracked, str):
+            tracked = tracked.decode("utf-8")
+        self.trackedFiles = set(
+            path for path in tracked.split("\0") if path)
+        for trackedFile in self.trackedFiles:
+            trackedDir = os.path.dirname(trackedFile)
+            while trackedDir:
+                self.trackedDirs.add(trackedDir)
+                trackedDir = os.path.dirname(trackedDir)
         self.__parseFileList(rootDir)
 
     def __parseFileList(self, folderdir):
@@ -84,6 +98,9 @@ class CocosFileList:
             relativePath = path[len(self.rootDir)+1:len(path)]
             relativePath = relativePath.replace('\\', '/')
             if os.path.isdir(path):
+                if (relativePath not in self.trackedDirs and
+                    relativePath not in self.trackedFiles):
+                    continue
                 if (
                       self.__bInclude("/%s" %relativePath) or
                       self.__bInclude("/%s/" %relativePath) or
@@ -119,6 +136,8 @@ class CocosFileList:
                         continue
                 self.__parseFileList(path)
             else:
+                if relativePath not in self.trackedFiles:
+                    continue
                 if (
                     not self.__bInclude("/%s" %relativePath) and
                     not self.__bInclude(item)
@@ -189,4 +208,3 @@ if __name__ == '__main__':
     cocosObj.parseFileList(cocos_root)
     cocosObj.writeFileList(cocos_file_path)
     # print ("had list files to cocos_file_list.json")
-

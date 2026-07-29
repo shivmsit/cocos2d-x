@@ -36,8 +36,7 @@ If you want to contribute code, please follow these steps:
 $ git clone git://github.com/cocos2d/cocos2d-x.git
 $ cd cocos2d-x
 $ git checkout v3
-$ ./download-deps.py
-$ git submodule update --init
+$ git submodule update --init --recursive
 ```
 
 -   Apply your changes in the recently downloaded repository

@@ -3,12 +3,6 @@ $python = "C:\\Python27\\python.exe"
 $git_retry = "$pyhon $env:APPVEYOR_BUILD_FOLDER\tools\appveyor-scripts\git_retry.py"
 
 
-function Download-Deps
-{
-    Write-Host "Download-Deps"
-    & $python $env:APPVEYOR_BUILD_FOLDER\download-deps.py --remove-download=False
-}
-
 function Generate-Binding-Codes
 {
     $env:NDK_ROOT=$env:APPVEYOR_BUILD_FOLDER + "\..\android-ndk-r16b"
@@ -35,8 +29,6 @@ function Update-SubModule
 }
 
 Update-SubModule
-
-Download-Deps
 
 & python -m pip install retry
 

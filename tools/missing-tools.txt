@@ -1,8 +1,6 @@
-Git user attention
+Third-party engine source is versioned under external/.
 
-Please execute “download-deps.py” to download and install dependencies.
+If tools or test data are missing after cloning, initialize the repository
+submodules:
 
- $ cd cocos2d-x
- $ python download-deps.py
-
-Please execute download-deps.py once you synchronize with this repo. If there aren't any updates, it will not download dependencies again.
+ $ git submodule update --init --recursive

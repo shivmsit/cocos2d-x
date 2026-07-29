@@ -29,15 +29,6 @@ function install_linux_environment()
     echo "Installing linux dependence packages finished!"
 }
 
-function download_deps()
-{
-    # install dpes
-    pushd $COCOS2DX_ROOT
-    python download-deps.py -r=yes
-    popd
-    echo "Downloading cocos2d-x dependence finished!"
-}
-
 function install_python_module_for_osx()
 {
     pip install PyYAML
@@ -77,7 +68,6 @@ function install_environement_for_pull_request()
 
     # use NDK's clang to generate binding codes
     install_android_ndk
-    download_deps
 }
 
 # should generate binding codes & cocos_files.json after merging
@@ -90,21 +80,18 @@ function install_environement_for_after_merge()
 
     echo "Building merge commit ..."
     install_android_ndk
-    download_deps
 }
 
 if [ "$BUILD_TARGET" == "android_cocos_new_cpp_test" ]; then
     sudo apt-get update
     sudo apt-get install ninja-build
     ninja --version
-    download_deps
     sudo python -m pip install retry
     python $COCOS2DX_ROOT/tools/appveyor-scripts/setup_android.py
     exit 0
 fi
 
 if [ "$BUILD_TARGET" == "linux_cocos_new_lua_test" ]; then
-    download_deps
     install_linux_environment
     sudo python -m pip install retry
     # set android ndk environment by setup_android.py
