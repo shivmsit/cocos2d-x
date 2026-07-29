@@ -29,7 +29,7 @@
 #include "navmesh/CCNavMesh.h"
 #include "2d/CCNode.h"
 #include "2d/CCScene.h"
-#include "recast/DetourTileCache/DetourTileCache.h"
+#include "DetourTileCache.h"
 
 NS_CC_BEGIN
 
@@ -125,12 +125,12 @@ void NavMeshObstacle::syncToNode()
     if (_tileCache){
         auto obstacle = _tileCache->getObstacleByRef(_obstacleID);
         if (obstacle){
-            Vec3 localPos = Vec3(obstacle->pos[0], obstacle->pos[1], obstacle->pos[2]);
+            Vec3 localPos = Vec3(obstacle->cylinder.pos[0], obstacle->cylinder.pos[1], obstacle->cylinder.pos[2]);
             if (_owner->getParent())
                 _owner->getParent()->getWorldToNodeTransform().transformPoint(localPos, &localPos);
             _owner->setPosition3D(localPos);
-            _radius = obstacle->radius;
-            _height = obstacle->height;
+            _radius = obstacle->cylinder.radius;
+            _height = obstacle->cylinder.height;
         }
     }
 }
@@ -150,11 +150,10 @@ void NavMeshObstacle::syncToObstacle()
     if (_tileCache){
         auto obstacle = _tileCache->getObstacleByRef(_obstacleID);
         if (obstacle){
-            Vec3 worldPos = Vec3(obstacle->pos[0], obstacle->pos[1], obstacle->pos[2]);
             Mat4 mat = _owner->getNodeToWorldTransform();
-            if ((mat.m[12] != obstacle->pos[0] && mat.m[13] != obstacle->pos[1] && mat.m[14] != obstacle->pos[2])
-                || obstacle->radius != _radius
-                || obstacle->height != _height){
+            if ((mat.m[12] != obstacle->cylinder.pos[0] && mat.m[13] != obstacle->cylinder.pos[1] && mat.m[14] != obstacle->cylinder.pos[2])
+                || obstacle->cylinder.radius != _radius
+                || obstacle->cylinder.height != _height){
                 _tileCache->removeObstacle(_obstacleID);
                 _tileCache->addObstacle(&mat.m[12], _radius, _height, &_obstacleID);
             }

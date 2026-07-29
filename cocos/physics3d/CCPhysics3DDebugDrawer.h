@@ -35,7 +35,7 @@
 #if CC_USE_3D_PHYSICS
 
 #if (CC_ENABLE_BULLET_INTEGRATION)
-#include "bullet/LinearMath/btIDebugDraw.h"
+#include "LinearMath/btIDebugDraw.h"
 
 NS_CC_BEGIN
 

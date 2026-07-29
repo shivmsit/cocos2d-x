@@ -47,14 +47,14 @@ NS_CC_END
 
 #if (CC_ENABLE_BULLET_INTEGRATION)
 
-//include bullet header files
-#include "bullet/LinearMath/btTransform.h"
-#include "bullet/LinearMath/btVector3.h"
-#include "bullet/LinearMath/btQuaternion.h"
+// Bullet's upstream source tree exposes these headers from its src root.
+#include "LinearMath/btTransform.h"
+#include "LinearMath/btVector3.h"
+#include "LinearMath/btQuaternion.h"
 
-#include "bullet/btBulletCollisionCommon.h"
-#include "bullet/btBulletDynamicsCommon.h"
-#include "bullet/BulletCollision/CollisionDispatch/btGhostObject.h"
+#include "btBulletCollisionCommon.h"
+#include "btBulletDynamicsCommon.h"
+#include "BulletCollision/CollisionDispatch/btGhostObject.h"
 
 //convert between cocos and bullet
 cocos2d::Vec3 convertbtVector3ToVec3(const btVector3 &btVec3);

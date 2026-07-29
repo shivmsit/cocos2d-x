@@ -33,7 +33,7 @@
 #include "renderer/CCCustomCommand.h"
 #include "renderer/CCRenderState.h"
 #include "math/Vec3.h"
-#include "recast/DebugUtils/DebugDraw.h"
+#include "DebugDraw.h"
 #include <string>
 #include <vector>
 

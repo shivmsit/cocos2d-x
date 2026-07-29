@@ -36,7 +36,7 @@ NS_CC_BEGIN
 CC_DLL const char* physics3dVersion()
 {
 #if CC_ENABLE_BULLET_INTEGRATION
-    return "bullet2.82";
+    return "bullet3.25";
 #endif
 }
 
