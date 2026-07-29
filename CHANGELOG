@@ -1,3 +1,15 @@
+cocos2d-x-3.17.3 Jul.29 2026
+
+[HIGHLIGHT]     Maintenance: backward-compatible update for Cocos2d-x 3.17
+
+[NEW]           Build: added reusable macOS and Android engine prebuilts
+
+[REFINE]        Android: modernized the Gradle and CMake C++ project template
+
+[FIX]           Fonts: corrected macOS system-font rendering
+[FIX]           Renderer: restored framebuffer depth clearing
+[FIX]           Documentation: restored the README logo
+
 cocos2d-x-3.17.2 May.21 2019
 
 [NEW]           Network: added clear requests and responses method to httpclient
