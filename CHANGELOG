@@ -27,9 +27,9 @@ cocos2d-x-3.17.3 Jul.29 2026
 
 [REFINE]        Android: modernized the Gradle and CMake C++ project template
 
-[FIX]           Fonts: corrected macOS system-font texture initialization and glyph rendering
+[FIX]           Fonts: corrected macOS system-font rendering
 [FIX]           Renderer: restored framebuffer depth clearing
-[FIX]           Documentation: restored the README logo from the repository
+[FIX]           Documentation: restored the README logo
 
 cocos2d-x-3.17.2 May.21 2019
 
