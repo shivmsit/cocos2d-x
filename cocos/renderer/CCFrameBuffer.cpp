@@ -418,10 +418,24 @@ FrameBuffer::~FrameBuffer()
 void FrameBuffer::clearFBO()
 {
     applyFBO();
+
+    GLboolean depthWriteMask = GL_FALSE;
+    glGetBooleanv(GL_DEPTH_WRITEMASK, &depthWriteMask);
+    if (depthWriteMask == GL_FALSE)
+    {
+        glDepthMask(GL_TRUE);
+    }
+
     glClearColor(_clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a);
     glClearDepth(_clearDepth);
     glClearStencil(_clearStencil);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
+
+    if (depthWriteMask == GL_FALSE)
+    {
+        glDepthMask(GL_FALSE);
+    }
+
     restoreFBO();
 }
 
