@@ -8,35 +8,17 @@ endif()
 file(GLOB_RECURSE cocos2dx_archives "${COCOS2DX_BUILD_DIR}/*.a")
 list(FILTER cocos2dx_archives EXCLUDE REGEX "/libcocos2d-prebuilt\\.a$")
 
-# Several cocos2d-x external targets (GLFW, libpng, libjpeg, zlib, etc.) are
-# IMPORTED targets whose archives live in external/*/prebuilt rather than the
-# CMake build directory. Include them in the combined archive as well.
+# Several cocos2d-x external targets are IMPORTED
+# targets whose archives live in external/*/prebuilt rather than the CMake build
+# directory. Include them in the combined archive as well. GLFW, zlib,
+# FreeType, JPEG, libpng and Bullet are deliberately excluded here: they are
+# built from source and found by the build-directory glob above.
 if(DEFINED COCOS2DX_ROOT_PATH AND DEFINED COCOS2DX_EXTERNAL_PREBUILT_SUBDIR)
     if(COCOS2DX_EXTERNAL_PREBUILT_SUBDIR STREQUAL "mac")
         # Keep this aligned with external/CMakeLists.txt. In particular, do
         # not add the optional Lua/JavaScript archives: they are disabled for
         # this C++ prebuilt and make the archive unnecessarily huge.
-        set(cocos2dx_imported_archives
-            "${COCOS2DX_ROOT_PATH}/external/Box2D/prebuilt/mac/libbox2d.a"
-            "${COCOS2DX_ROOT_PATH}/external/bullet/prebuilt/mac/libLinearMath.a"
-            "${COCOS2DX_ROOT_PATH}/external/bullet/prebuilt/mac/libBulletCollision.a"
-            "${COCOS2DX_ROOT_PATH}/external/bullet/prebuilt/mac/libBulletDynamics.a"
-            "${COCOS2DX_ROOT_PATH}/external/bullet/prebuilt/mac/libBulletMultiThreaded.a"
-            "${COCOS2DX_ROOT_PATH}/external/bullet/prebuilt/mac/libMiniCL.a"
-            "${COCOS2DX_ROOT_PATH}/external/chipmunk/prebuilt/mac/libchipmunk.a"
-            "${COCOS2DX_ROOT_PATH}/external/curl/prebuilt/mac/libcurl.a"
-            "${COCOS2DX_ROOT_PATH}/external/freetype2/prebuilt/mac/libfreetype.a"
-            "${COCOS2DX_ROOT_PATH}/external/glfw3/prebuilt/mac/libglfw3.a"
-            "${COCOS2DX_ROOT_PATH}/external/jpeg/prebuilt/mac/libjpeg.a"
-            "${COCOS2DX_ROOT_PATH}/external/openssl/prebuilt/mac/libcrypto.a"
-            "${COCOS2DX_ROOT_PATH}/external/openssl/prebuilt/mac/libssl.a"
-            "${COCOS2DX_ROOT_PATH}/external/png/prebuilt/mac/libpng.a"
-            "${COCOS2DX_ROOT_PATH}/external/tiff/prebuilt/mac/libtiff.a"
-            "${COCOS2DX_ROOT_PATH}/external/uv/prebuilt/mac/libuv_a.a"
-            "${COCOS2DX_ROOT_PATH}/external/webp/prebuilt/mac/libwebp.a"
-            "${COCOS2DX_ROOT_PATH}/external/websockets/prebuilt/mac/libwebsockets.a"
-            "${COCOS2DX_ROOT_PATH}/external/zlib/prebuilt/mac/libz.a"
-        )
+        set(cocos2dx_imported_archives)
     else()
         file(GLOB_RECURSE cocos2dx_imported_archives
             "${COCOS2DX_ROOT_PATH}/external/*/prebuilt/${COCOS2DX_EXTERNAL_PREBUILT_SUBDIR}/*.a"

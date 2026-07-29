@@ -44,9 +44,10 @@ include(CocosBuildSet)
 # build options
 option(BUILD_TESTS "Build tests" ON)
 
-# default tests include lua, js test project, so we set those option on to build libs
+# Lua is source-built from the vendored LuaJIT stack.  The legacy SpiderMonkey
+# binary bundle is no longer downloaded, so JS bindings remain opt-in until
+# their runtime has also been migrated to a source build.
 set(BUILD_LUA_LIBS ON)
-set(BUILD_JS_LIBS ON)
 
 add_subdirectory(${COCOS2DX_ROOT_PATH}/cocos ${ENGINE_BINARY_PATH}/cocos/core)
 
@@ -56,7 +57,9 @@ set(BUILD_ENGINE_DONE ON)
 if (BUILD_TESTS)
   add_subdirectory(${COCOS2DX_ROOT_PATH}/tests/cpp-empty-test ${ENGINE_BINARY_PATH}/tests/cpp-empty-test)
   add_subdirectory(${COCOS2DX_ROOT_PATH}/tests/cpp-tests ${ENGINE_BINARY_PATH}/tests/cpp-tests)
-  add_subdirectory(${COCOS2DX_ROOT_PATH}/tests/js-tests/project ${ENGINE_BINARY_PATH}/tests/js-tests)
+  if(BUILD_JS_LIBS)
+    add_subdirectory(${COCOS2DX_ROOT_PATH}/tests/js-tests/project ${ENGINE_BINARY_PATH}/tests/js-tests)
+  endif()
   add_subdirectory(${COCOS2DX_ROOT_PATH}/tests/lua-empty-test/project ${ENGINE_BINARY_PATH}/tests/lua-empty-test)
   add_subdirectory(${COCOS2DX_ROOT_PATH}/tests/lua-tests/project ${ENGINE_BINARY_PATH}/tests/lua-test)
 endif()

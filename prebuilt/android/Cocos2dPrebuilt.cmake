@@ -12,6 +12,23 @@ if(NOT ANDROID_ABI)
 endif()
 set(_cocos2dx_prebuilt_build_dir "${COCOS2DX_PREBUILT_ROOT}/build/${ANDROID_ABI}-${COCOS2DX_PREBUILT_CONFIG}")
 set(_cocos2dx_prebuilt_archive "${_cocos2dx_prebuilt_build_dir}/lib/libcocos2d-prebuilt.a")
+set(COCOS2DX_PREBUILT_GENERATED_EXTERNAL_INCLUDE_DIRS
+    "${_cocos2dx_prebuilt_build_dir}/engine/external/jpeg"
+    "${_cocos2dx_prebuilt_build_dir}/engine/external/png"
+    "${_cocos2dx_prebuilt_build_dir}/engine/external/tiff/libtiff"
+    "${_cocos2dx_prebuilt_build_dir}/engine/external/openssl/stage/include"
+    "${_cocos2dx_prebuilt_build_dir}/engine/external/websockets/build"
+)
+
+# The combined archive includes OpenSSL. Expose its generated headers and
+# symbols to Android games that use OpenSSL directly.
+if(NOT TARGET cocos2d::openssl)
+    add_library(cocos2d::openssl INTERFACE IMPORTED GLOBAL)
+    set_target_properties(cocos2d::openssl PROPERTIES
+        INTERFACE_LINK_LIBRARIES "cocos2d_prebuilt;dl"
+        INTERFACE_INCLUDE_DIRECTORIES "${_cocos2dx_prebuilt_build_dir}/engine/external/openssl/stage/include"
+    )
+endif()
 
 if(NOT EXISTS "${_cocos2dx_prebuilt_archive}" AND COCOS2DX_BUILD_PREBUILT_IF_MISSING)
     if(NOT CMAKE_ANDROID_NDK)
@@ -39,7 +56,9 @@ if(NOT TARGET cocos2d_prebuilt)
     set_target_properties(cocos2d_prebuilt PROPERTIES
         IMPORTED_LOCATION "${_cocos2dx_prebuilt_archive}"
         INTERFACE_INCLUDE_DIRECTORIES "${COCOS2DX_ROOT_PATH};${COCOS2DX_ROOT_PATH}/cocos;${COCOS2DX_ROOT_PATH}/extensions;${COCOS2DX_ROOT_PATH}/cocos/platform;${COCOS2DX_ROOT_PATH}/cocos/base;${COCOS2DX_ROOT_PATH}/cocos/editor-support;${COCOS2DX_ROOT_PATH}/cocos/audio/include;${COCOS2DX_ROOT_PATH}/cocos/platform/android;${_cocos2dx_prebuilt_external_dirs}"
+        INTERFACE_LINK_OPTIONS "LINKER:--exclude-libs,libcocos2d-prebuilt.a"
     )
+    cocos2dx_configure_prebuilt_abi(cocos2d_prebuilt)
 endif()
 
 function(use_prebuilt_cocos2dx target)
