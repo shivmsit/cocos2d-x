@@ -21,14 +21,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 # ****************************************************************************/
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.16)
 
 set(APP_NAME HelloLua)
+option(COCOS_LUA_USE_SIMULATOR
+       "Build the macOS Lua project with the Cocos Simulator"
+       ON)
 
 project(${APP_NAME})
 
 set(RUNTIME_SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/frameworks/runtime-src)
-set(COCOS2DX_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/frameworks/cocos2d-x)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CocosEngine.cmake)
+cocos2dx_resolve_root(COCOS2DX_ROOT_PATH)
 set(CMAKE_MODULE_PATH ${COCOS2DX_ROOT_PATH}/cmake/Modules/)
 
 include(CocosBuildSet)
@@ -56,14 +60,13 @@ include_directories(
         ${RUNTIME_SRC_ROOT}/Classes
         ${COCOS2DX_ROOT_PATH}/cocos/scripting/lua-bindings/auto
         ${COCOS2DX_ROOT_PATH}/cocos/scripting/lua-bindings/manual
-        ${COCOS2DX_ROOT_PATH}/external/lua/luajit/include
-        ${COCOS2DX_ROOT_PATH}/external/lua/tolua
+        ${COCOS2DX_ROOT_PATH}/external/tolua
         ${COCOS2DX_ROOT_PATH}/tools/simulator/libsimulator/lib
 )
 if(ANDROID)
     # change APP_NAME to the share library name for Android, it's value depend on AndroidManifest.xml
     set(APP_NAME cocos2dlua)
-    list(APPEND GAME_SOURCE ${RUNTIME_SRC_ROOT}/proj.android/app/jni/hellolua/main.cpp)
+    list(APPEND GAME_SOURCE ${RUNTIME_SRC_ROOT}/proj.android/app/src/main/cpp/main.cpp)
 elseif(LINUX)
     list(APPEND GAME_SOURCE ${RUNTIME_SRC_ROOT}/proj.linux/main.cpp)
 elseif(WINDOWS)
@@ -101,25 +104,42 @@ elseif(APPLE)
              ${APP_UI_RES}
              )
     elseif(MACOSX)
-        list(APPEND GAME_HEADER
-             ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/SimulatorApp.h
-             ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/ConsoleWindowController.h
-             )
-        set(APP_UI_RES
-            ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Base.lproj/MainMenu.xib
-            ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/en.lproj/MainMenu.xib
-            ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/zh-Hans.lproj/MainMenu.xib
-            ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/ConsoleWindow.xib
-            ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Icon.icns
-            ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Info.plist
-            )
-        list(APPEND GAME_SOURCE
-             ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/main.m
-             ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/SimulatorApp.mm
-             ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/ConsoleWindowController.m
-             ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Prefix.pch
-             ${APP_UI_RES}
-             )
+        if(COCOS_LUA_USE_SIMULATOR)
+            list(APPEND GAME_HEADER
+                 ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/SimulatorApp.h
+                 ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/ConsoleWindowController.h
+                 )
+            set(SIMULATOR_XIB_RES
+                ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Base.lproj/MainMenu.xib
+                ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/en.lproj/MainMenu.xib
+                ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/zh-Hans.lproj/MainMenu.xib
+                ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/ConsoleWindow.xib
+                )
+            set(APP_UI_RES
+                ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Icon.icns
+                ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Info.plist
+                )
+            if(XCODE)
+                list(APPEND APP_UI_RES ${SIMULATOR_XIB_RES})
+            endif()
+            list(APPEND GAME_SOURCE
+                 ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/main.m
+                 ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/SimulatorApp.mm
+                 ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/ConsoleWindowController.m
+                 ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Prefix.pch
+                 ${APP_UI_RES}
+                 )
+        else()
+            set(APP_UI_RES
+                ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Icon.icns
+                ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Info.plist
+                )
+            list(APPEND GAME_SOURCE
+                 ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/main.cpp
+                 ${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Prefix.pch
+                 ${APP_UI_RES}
+                 )
+        endif()
     endif()
     list(APPEND GAME_SOURCE ${cc_common_res})
 endif()
@@ -140,7 +160,7 @@ endif()
 target_link_libraries(${APP_NAME} luacocos2d)
 target_include_directories(${APP_NAME} PRIVATE ${RUNTIME_SRC_ROOT}/Classes)
 
-if(WINDOWS OR MACOSX)
+if(WINDOWS OR (MACOSX AND COCOS_LUA_USE_SIMULATOR))
     add_subdirectory(${COCOS2DX_ROOT_PATH}/tools/simulator/libsimulator ${ENGINE_BINARY_PATH}/cocos/simulatorlib)
     target_link_libraries(${APP_NAME} simulatorlib)
 endif()
@@ -153,6 +173,31 @@ if(APPLE)
         set_target_properties(${APP_NAME} PROPERTIES
                               MACOSX_BUNDLE_INFO_PLIST "${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Info.plist"
                               )
+        if(COCOS_LUA_USE_SIMULATOR AND NOT XCODE)
+            find_program(COCOS_IBTOOL ibtool REQUIRED)
+            set(SIMULATOR_BUNDLE_RES
+                "$<TARGET_FILE_DIR:${APP_NAME}>/../Resources")
+            add_custom_command(TARGET ${APP_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                    "${SIMULATOR_BUNDLE_RES}/Base.lproj"
+                    "${SIMULATOR_BUNDLE_RES}/en.lproj"
+                    "${SIMULATOR_BUNDLE_RES}/zh-Hans.lproj"
+                COMMAND "${COCOS_IBTOOL}" --compile
+                    "${SIMULATOR_BUNDLE_RES}/Base.lproj/MainMenu.nib"
+                    "${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Base.lproj/MainMenu.xib"
+                COMMAND "${COCOS_IBTOOL}" --compile
+                    "${SIMULATOR_BUNDLE_RES}/en.lproj/MainMenu.nib"
+                    "${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/en.lproj/MainMenu.xib"
+                COMMAND "${COCOS_IBTOOL}" --compile
+                    "${SIMULATOR_BUNDLE_RES}/zh-Hans.lproj/MainMenu.nib"
+                    "${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/zh-Hans.lproj/MainMenu.xib"
+                COMMAND "${COCOS_IBTOOL}" --compile
+                    "${SIMULATOR_BUNDLE_RES}/ConsoleWindow.nib"
+                    "${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/ConsoleWindow.xib"
+                COMMENT "Compiling macOS Simulator interface resources"
+                VERBATIM
+            )
+        endif()
     elseif(IOS)
         cocos_pak_xcode(${APP_NAME} INFO_PLIST "iOSBundleInfo.plist.in")
         set_xcode_property(${APP_NAME} ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")

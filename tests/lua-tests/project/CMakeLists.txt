@@ -44,7 +44,7 @@ endif()
 if(ANDROID)
     # change APP_NAME to the share library name for Android, it's value depend on AndroidManifest.xml
     set(APP_NAME lua_tests)
-    list(APPEND GAME_SOURCE proj.android/app/jni/main.cpp)
+    list(APPEND GAME_SOURCE proj.android/app/src/main/cpp/main.cpp)
 elseif(LINUX)
     list(APPEND GAME_SOURCE proj.linux/main.cpp)
 elseif(WINDOWS)
