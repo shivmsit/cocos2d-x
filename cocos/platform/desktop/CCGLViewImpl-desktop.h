@@ -43,13 +43,14 @@ THE SOFTWARE.
 #endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) */
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
-#ifndef GLFW_EXPOSE_NATIVE_NSGL
-#define GLFW_EXPOSE_NATIVE_NSGL
-#endif
-#ifndef GLFW_EXPOSE_NATIVE_COCOA
-#define GLFW_EXPOSE_NATIVE_COCOA
-#endif
-#include "glfw3native.h"
+// Avoid glfw3native.h here.  GLFW 3.4 includes ApplicationServices from that
+// header, which exposes a global legacy Rect that conflicts with cocos2d::Rect.
+// Cocos only needs these two native accessors; their Objective-C object type is
+// forward-declared in CCGLView.h.
+extern "C" {
+GLFWAPI id glfwGetCocoaWindow(GLFWwindow* window);
+GLFWAPI id glfwGetNSGLContext(GLFWwindow* window);
+}
 #endif // #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 NS_CC_BEGIN

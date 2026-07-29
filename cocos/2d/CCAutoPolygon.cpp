@@ -27,10 +27,10 @@ THE SOFTWARE.
 ****************************************************************************/
 
 #include "2d/CCAutoPolygon.h"
-#include "poly2tri/poly2tri.h"
+#include "poly2tri.h"
 #include "base/CCDirector.h"
 #include "renderer/CCTextureCache.h"
-#include "clipper/clipper.hpp"
+#include "clipper2/clipper.h"
 #include <algorithm>
 #include <math.h>
 
@@ -521,51 +521,43 @@ std::vector<Vec2> AutoPolygon::expand(const std::vector<Vec2>& points, const coc
         log("AUTOPOLYGON: cannot expand points for %s with less than 3 points, e: %f", _filename.c_str(), epsilon);
         return std::vector<Vec2>();
     }
-    ClipperLib::Path subj;
-    ClipperLib::PolyTree solution;
-    ClipperLib::PolyTree out;
+    Clipper2Lib::Path64 subj;
+    Clipper2Lib::PolyTree64 solution;
+    Clipper2Lib::PolyTree64 out;
     for(const auto& pt : points)
     {
-        subj << ClipperLib::IntPoint(static_cast<ClipperLib::cInt>(pt.x* PRECISION), static_cast<ClipperLib::cInt>(pt.y * PRECISION));
+        subj.emplace_back(pt.x * PRECISION, pt.y * PRECISION);
     }
-    ClipperLib::ClipperOffset co;
-    co.AddPath(subj, ClipperLib::jtMiter, ClipperLib::etClosedPolygon);
-    co.Execute(solution, epsilon * PRECISION);
-    
-    ClipperLib::PolyNode* p = solution.GetFirst();
+    Clipper2Lib::ClipperOffset co;
+    co.AddPath(subj, Clipper2Lib::JoinType::Miter, Clipper2Lib::EndType::Polygon);
+    co.Execute(epsilon * PRECISION, solution);
+
+    Clipper2Lib::PolyPath64* p = solution.Count() ? solution.Child(0) : nullptr;
     if(!p)
     {
         log("AUTOPOLYGON: Clipper failed to expand the points");
         return points;
     }
-    while(p->IsHole()){
-        p = p->GetNext();
-    }
-
     //turn the result into simply polygon (AKA, fix overlap)
     
     //clamp into the specified rect
-    ClipperLib::Clipper cl;
-    cl.StrictlySimple(true);
-    cl.AddPath(p->Contour, ClipperLib::ptSubject, true);
-    //create the clipping rect
-    ClipperLib::Path clamp;
-    clamp.push_back(ClipperLib::IntPoint(0, 0));
-    clamp.push_back(ClipperLib::IntPoint(static_cast<ClipperLib::cInt>(rect.size.width/_scaleFactor * PRECISION), 0));
-    clamp.push_back(ClipperLib::IntPoint(static_cast<ClipperLib::cInt>(rect.size.width/_scaleFactor * PRECISION), 
-                                         static_cast<ClipperLib::cInt>(rect.size.height/_scaleFactor * PRECISION)));
-    clamp.push_back(ClipperLib::IntPoint(0, static_cast<ClipperLib::cInt>(rect.size.height/_scaleFactor * PRECISION)));
-    cl.AddPath(clamp, ClipperLib::ptClip, true);
-    cl.Execute(ClipperLib::ctIntersection, out);
+    Clipper2Lib::Path64 clamp;
+    clamp.emplace_back(int64_t{0}, int64_t{0});
+    clamp.emplace_back(static_cast<int64_t>(rect.size.width / _scaleFactor * PRECISION), int64_t{0});
+    clamp.emplace_back(static_cast<int64_t>(rect.size.width / _scaleFactor * PRECISION), static_cast<int64_t>(rect.size.height / _scaleFactor * PRECISION));
+    clamp.emplace_back(int64_t{0}, static_cast<int64_t>(rect.size.height / _scaleFactor * PRECISION));
+    Clipper2Lib::Clipper64 cl;
+    cl.AddSubject(Clipper2Lib::Paths64 { p->Polygon() });
+    cl.AddClip(Clipper2Lib::Paths64 { clamp });
+    cl.Execute(Clipper2Lib::ClipType::Intersection, Clipper2Lib::FillRule::NonZero, out);
     
     std::vector<Vec2> outPoints;
-    ClipperLib::PolyNode* p2 = out.GetFirst();
-    while(p2->IsHole()){
-        p2 = p2->GetNext();
-    }
-    for(const auto& pt : p2->Contour)
+    Clipper2Lib::PolyPath64* p2 = out.Count() ? out.Child(0) : nullptr;
+    if (!p2)
+        return std::vector<Vec2>();
+    for(const auto& pt : p2->Polygon())
     {
-        outPoints.push_back(Vec2(pt.X/PRECISION, pt.Y/PRECISION));
+        outPoints.push_back(Vec2(pt.x / PRECISION, pt.y / PRECISION));
     }
     return outPoints;
 }

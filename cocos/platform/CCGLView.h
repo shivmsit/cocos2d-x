@@ -37,7 +37,11 @@ THE SOFTWARE.
 #endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) */
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
-typedef void* id;
+// GLFW 3.4's native Cocoa header uses the Objective-C runtime's `id` type.
+// Match that declaration without importing the whole runtime here; doing so
+// pulls in the legacy global `Rect` declaration and clashes with cocos2d::Rect.
+struct objc_object;
+typedef struct objc_object *id;
 #endif /* (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) */
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
