@@ -1,0 +1,113 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - v3.18
+    tags:
+      - cocos2d-x-3.18.*
+  pull_request:
+    branches:
+      - v3.18
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+
+jobs:
+  macos:
+    name: macOS Debug
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Build engine prebuilt
+        run: |
+          ./prebuilt/build-prebuilt.sh \
+            --platform macosx \
+            --arch "$(uname -m)" \
+            --config Debug
+
+      - name: Generate C++ project
+        run: |
+          python3 tools/cocos2d-console/bin/cocos.py new CIGame \
+            -p org.cocos2dx.cigame \
+            -l cpp \
+            -d "$RUNNER_TEMP"
+
+      - name: Build generated project
+        run: |
+          cmake \
+            -S "$RUNNER_TEMP/CIGame" \
+            -B "$RUNNER_TEMP/CIGame/build" \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_OSX_ARCHITECTURES="$(uname -m)" \
+            -DCOCOS2DX_ROOT_PATH="$GITHUB_WORKSPACE" \
+            -DCOCOS2DX_ENGINE_MODE=PREBUILT \
+            -DCOCOS2DX_BUILD_PREBUILT_IF_MISSING=OFF
+          cmake --build "$RUNNER_TEMP/CIGame/build" --parallel
+
+  android:
+    name: Android arm64 Debug
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Install Android toolchain
+        env:
+          NDK_VERSION: 30.0.15729638
+        run: |
+          sdkmanager \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "cmake;3.22.1" \
+            "ndk;$NDK_VERSION"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+
+      - name: Build engine prebuilt
+        run: |
+          ./prebuilt/build-prebuilt.sh \
+            --platform android \
+            --arch arm64-v8a \
+            --api 24 \
+            --config Debug \
+            --ndk "$ANDROID_NDK_HOME"
+
+      - name: Generate C++ project
+        run: |
+          python3 tools/cocos2d-console/bin/cocos.py new CIGame \
+            -p org.cocos2dx.cigame \
+            -l cpp \
+            -d "$RUNNER_TEMP"
+
+      - name: Build generated APK
+        working-directory: ${{ runner.temp }}/CIGame/proj.android
+        run: |
+          ./gradlew \
+            --no-daemon \
+            -PCOCOS2DX_ROOT_PATH="$GITHUB_WORKSPACE" \
+            assembleDebug
