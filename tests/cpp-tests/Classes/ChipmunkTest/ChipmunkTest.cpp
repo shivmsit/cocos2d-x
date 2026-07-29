@@ -29,6 +29,10 @@
 //
 
 #include "chipmunk/chipmunk.h"
+extern "C"
+{
+#include "chipmunk/cpHastySpace.h"
+}
 
 #include "ChipmunkTest.h"
 
@@ -69,15 +73,8 @@ ChipmunkTest::ChipmunkTest()
     // init physics
     initPhysics();
 
-#if 1
-    // Use batch node. Faster
     auto parent = SpriteBatchNode::create("Images/grossini_dance_atlas.png", 100);
     _spriteTexture = parent->getTexture();
-#else
-    // doesn't use batch node. Slower
-    _spriteTexture = Director::getInstance()->getTextureCache()->addImage("Images/grossini_dance_atlas.png");
-    auto parent = Node::create();
-#endif
     addChild(parent, 0, kTagParentNode);
 
     addNewSpriteAtPosition(cocos2d::Vec2(200,200));
@@ -215,36 +212,32 @@ void ChipmunkTest::reset(Ref* sender)
 void ChipmunkTest::addNewSpriteAtPosition(cocos2d::Vec2 pos)
 {
 #if CC_ENABLE_CHIPMUNK_INTEGRATION    
-    int posx, posy;
-
     auto parent = getChildByTag(kTagParentNode);
-
-    posx = CCRANDOM_0_1() * 200.0f;
-    posy = CCRANDOM_0_1() * 200.0f;
-
-    posx = (posx % 4) * 85;
-    posy = (posy % 3) * 121;
-
-
-    int num = 4;
+    const int atlasX = static_cast<int>(CCRANDOM_0_1() * 4.0f) * 85;
+    const int atlasY = static_cast<int>(CCRANDOM_0_1() * 3.0f) * 121;
+    // The image frame includes transparent padding.  Keep the collision body
+    // around Grossini's visible figure, matching the historical test bounds.
+    constexpr float bodyWidth = 48.0f;
+    constexpr float bodyHeight = 108.0f;
     cpVect verts[] = {
-        cpv(-24,-54),
-        cpv(-24, 54),
-        cpv( 24, 54),
-        cpv( 24,-54),
+        cpv(-bodyWidth * 0.5f, -bodyHeight * 0.5f),
+        cpv(-bodyWidth * 0.5f,  bodyHeight * 0.5f),
+        cpv( bodyWidth * 0.5f,  bodyHeight * 0.5f),
+        cpv( bodyWidth * 0.5f, -bodyHeight * 0.5f),
     };
 
-    cpBody *body = cpBodyNew(1.0f, cpMomentForPoly(1.0f, num, verts, cpvzero, 0.0f));
+    cpBody *body = cpBodyNew(1.0f, cpMomentForBox(1.0f, bodyWidth, bodyHeight));
 
     cpBodySetPosition(body, cpv(pos.x, pos.y));
     cpSpaceAddBody(_space, body);
 
-    cpShape* shape = cpPolyShapeNew(body, num, verts, cpTransformIdentity, 0.0f);
+    cpShape* shape = cpPolyShapeNew(body, 4, verts, cpTransformIdentity, 0.0f);
     cpShapeSetElasticity(shape, 0.5f);
     cpShapeSetFriction(shape, 0.5f);
     cpSpaceAddShape(_space, shape);
 
-    auto sprite = PhysicsSprite::createWithTexture(_spriteTexture, cocos2d::Rect(posx, posy, 85, 121));
+    auto sprite = PhysicsSprite::createWithTexture(
+        _spriteTexture, Rect(atlasX, atlasY, 85.0f, 121.0f));
     parent->addChild(sprite);
 
     sprite->setCPBody(body);
@@ -290,4 +283,3 @@ ChipmunkTests::ChipmunkTests()
 {
     ADD_TEST_CASE(ChipmunkTest);
 }
-
