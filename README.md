@@ -112,8 +112,8 @@ Set `COCOS2DX_BUILD_PREBUILT_IF_MISSING=OFF` to require an explicit prebuild,
 or use `-DCOCOS2DX_ENGINE_MODE=SOURCE` to compile the engine with the game. See
 the [prebuilt library guide](prebuilt/README.md) for more information.
 
-Build and run a new project for Android
----------------------------------------
+Android
+-------
 
 Open the generated `proj.android` directory in Android Studio, or build it from
 the command line:
@@ -123,8 +123,8 @@ cd proj.android
 ./gradlew assembleDebug
 ```
 
-Build and run a new project for macOS
--------------------------------------
+macOS
+-----
 
 From the generated game directory:
 
