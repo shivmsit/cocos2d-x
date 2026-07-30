@@ -31,8 +31,6 @@
 #else // from our embedded sources
 #include "unzip.h"
 #endif
-#include "ioapi_mem.h"
-#include <memory>
 
 #include <zlib.h>
 #include <assert.h>
@@ -44,9 +42,11 @@
 #include "platform/CCFileUtils.h"
 #include <map>
 
-// minizip 1.2.0 is same with other platforms
+// System minizip uses the extended iterator names for this API.
+#ifdef MINIZIP_FROM_SYSTEM
 #define unzGoToFirstFile64(A,B,C,D) unzGoToFirstFile2(A,B,C,D, NULL, 0, NULL, 0)
 #define unzGoToNextFile64(A,B,C,D) unzGoToNextFile2(A,B,C,D, NULL, 0, NULL, 0)
+#endif
 
 NS_CC_BEGIN
 
@@ -511,7 +511,6 @@ class ZipFilePrivate
 {
 public:
     unzFile zipFile;
-    std::unique_ptr<ourmemory_s> memfs;
     
     // std::unordered_map is faster if available on the platform
     typedef std::unordered_map<std::string, struct ZipEntryInfo> FileListContainer;
@@ -743,15 +742,8 @@ bool ZipFile::initWithBuffer(const void *buffer, uLong size)
 {
     if (!buffer || size == 0) return false;
 
-    zlib_filefunc_def memory_file = { 0 };
-    
-    std::unique_ptr<ourmemory_t> memfs(new(std::nothrow) ourmemory_t{ (char*)const_cast<void*>(buffer), static_cast<uint32_t>(size), 0, 0, 0 });
-    if (!memfs) return false;
-    fill_memory_filefunc(&memory_file, memfs.get());
-    
-    _data->zipFile = unzOpen2(nullptr, &memory_file);
+    _data->zipFile = unzOpenBuffer(buffer, size);
     if (!_data->zipFile) return false;
-    _data->memfs = std::move(memfs);
 
     setFilter(emptyFilename);
     return true;
