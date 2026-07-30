@@ -1,4 +1,88 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'HelloLua'
+
+def isCocos2dxRoot = { File candidate ->
+    candidate != null &&
+        new File(candidate, 'cocos/cocos2d.h').isFile() &&
+        new File(candidate, 'cocos/platform/android/libcocos2dx/build.gradle').isFile() &&
+        new File(candidate, 'prebuilt/CMakeLists.txt').isFile()
+}
+
+def configuredRoot = providers.gradleProperty('COCOS2DX_ROOT_PATH').orNull
+if (!configuredRoot) {
+    configuredRoot = System.getenv('COCOS2DX_ROOT')
+}
+
+File cocos2dxRoot = null
+if (configuredRoot) {
+    cocos2dxRoot = file(configuredRoot).canonicalFile
+    if (!isCocos2dxRoot(cocos2dxRoot)) {
+        throw new GradleException(
+            "Configured cocos2d-x root is not compatible: ${cocos2dxRoot}")
+    }
+} else {
+    File gameRoot = settingsDir.parentFile.parentFile.parentFile
+    File localEngine = new File(gameRoot, 'cocos2d')
+    if (localEngine.exists()) {
+        cocos2dxRoot = localEngine.canonicalFile
+        if (!isCocos2dxRoot(cocos2dxRoot)) {
+            throw new GradleException(
+                "${localEngine} exists but is not a compatible cocos2d-x checkout")
+        }
+    } else {
+        def nearbyRoots = []
+        [
+            gameRoot.parentFile,
+            gameRoot.parentFile?.parentFile,
+            gameRoot.parentFile?.parentFile?.parentFile
+        ]
+            .findAll { it != null && it.isDirectory() }
+            .each { File parent ->
+                parent.listFiles()
+                    ?.findAll {
+                        it.isDirectory() &&
+                            (it.name == 'cocos2d-x' || it.name.startsWith('cocos2d-x-')) &&
+                            isCocos2dxRoot(it)
+                    }
+                    ?.each { nearbyRoots.add(it.canonicalFile) }
+            }
+
+        nearbyRoots = nearbyRoots.unique { it.canonicalPath }
+        if (nearbyRoots.size() == 1) {
+            cocos2dxRoot = nearbyRoots.first()
+        } else if (nearbyRoots.size() > 1) {
+            throw new GradleException(
+                "Multiple nearby cocos2d-x checkouts were found:\n  " +
+                    nearbyRoots.join('\n  ') +
+                    "\nSet COCOS2DX_ROOT or pass -PCOCOS2DX_ROOT_PATH=/path/to/cocos2d-x")
+        } else {
+            throw new GradleException(
+                "Unable to locate cocos2d-x. Set COCOS2DX_ROOT, pass " +
+                    "-PCOCOS2DX_ROOT_PATH=/path/to/cocos2d-x, or create an optional " +
+                    "cocos2d link in the game root.")
+        }
+    }
+}
+
+gradle.ext.cocos2dxRootPath = cocos2dxRoot.canonicalPath
+println "Using cocos2d-x from ${gradle.ext.cocos2dxRootPath}"
+
 include ':libcocos2dx'
-project(':libcocos2dx').projectDir = new File(settingsDir, '../../cocos2d-x/cocos/platform/android/libcocos2dx')
-include ':HelloLua'
-project(':HelloLua').projectDir = new File(settingsDir, 'app')
+project(':libcocos2dx').projectDir =
+    new File(cocos2dxRoot, 'cocos/platform/android/libcocos2dx')
+include ':app'

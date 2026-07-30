@@ -1,5 +1,21 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'LuaEmptyTest'
 include ':libcocos2dx'
-project(':libcocos2dx').projectDir = new File(settingsDir, '../../../../cocos/platform/android/libcocos2dx')
-include ':LuaEmptyTest'
-project(':LuaEmptyTest').projectDir = new File(settingsDir, 'app')
-rootProject.name = "lua-empty-test"
+project(':libcocos2dx').projectDir =
+    file('../../../../cocos/platform/android/libcocos2dx')
+include ':app'

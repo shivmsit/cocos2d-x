@@ -61,7 +61,7 @@
                 ".project",
                 "frameworks/runtime-src/proj.win32/main.cpp",
                 "frameworks/runtime-src/proj.android/settings.gradle",
-                "frameworks/runtime-src/proj.android/app/res/values/strings.xml",
+                "frameworks/runtime-src/proj.android/app/src/main/res/values/strings.xml",
                 "frameworks/runtime-src/proj.ios_mac/ios/main.m",
                 "frameworks/runtime-src/proj.ios_mac/ios/Prefix.pch",
                 "CMakeLists.txt"
@@ -70,8 +70,8 @@
         "project_replace_package_name": {
             "src_package_name": "org.cocos2dx.hellolua",
             "files": [
-                "frameworks/runtime-src/proj.android/app/build.gradle",
-                "frameworks/runtime-src/proj.android/app/AndroidManifest.xml"            ]
+                "frameworks/runtime-src/proj.android/app/build.gradle"
+            ]
         },
         "project_replace_mac_bundleid": {
             "src_bundle_id": "org.cocos2dx.hellolua",
@@ -114,7 +114,7 @@
                 "replace_string": "UIInterfaceOrientationPortraitUpsideDown"
             },
             {
-                "file_path": "frameworks/runtime-src/proj.android/app/AndroidManifest.xml",
+                "file_path": "frameworks/runtime-src/proj.android/app/src/main/AndroidManifest.xml",
                 "pattern": "android:screenOrientation=\\\".*\\\"",
                 "replace_string": "android:screenOrientation=\"portrait\""
             }
