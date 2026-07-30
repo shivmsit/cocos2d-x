@@ -1,38 +1,33 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+# Cocos2d-x 4.1.0 release notes
 
-- [Cocos2d-x 4.0 Release Notes](#cocos2d-x-40-release-notes)
-  - [Highlights](#highlights)
-  - [Documentation](#documentation)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Cocos2d-x 4.0 Release Notes #
-
-This version is mainly to support metal on iOS/macOS. In order to support metal, this version does a big refactor of the rendering system. And this version also remove deprecated functions, so there are some API modification.
-
-In order to help develpers easily update to v4, we wrote some documentations. These documentations can be found [here](https://docs.cocos.com/cocos2d-x/v4/manual/en/upgradeGuide/).
+Cocos2d-x 4.1 updates the native engine for current development toolchains
+while preserving the Cocos2d-x name and APIs.
 
 ## Highlights
 
-- support metal on iOS/macOS
-- use CMake for all platforms
-- update GLFW to 3.3
-- update minizip to 1.2
-- remove deprecated functions
-- remove h5 engine and JSB
-- remove tiff
-- remove `SimpleAudioEngine`
-- remove `experimetnal` namespace
-- fix bug that system font can not work correctly on macOS15
-- fix lua crash issue on 64bit devices
-- fix bugs for iOS13
-  - UIWebView uses WKWebView instead
-  - VideoPlayer uses AVPlayerController instead
+* Builds third-party dependencies from pinned source in the `external`
+  submodule.
+* Adds reusable Debug and Release engine libraries for macOS and Android.
+* Updates Android projects to Gradle 9.5, Android Gradle Plugin 9.3.1,
+  SDK 36, API 24 and NDK 30.
+* Updates Box2D to 3.1.1 and adds a basic test with debug drawing.
+* Builds LuaJIT, tolua++ and LuaSocket from source.
+* Updates `setup.py` and the Cocos Console for Python 3.
+* Builds Linux audio with miniaudio instead of the retired FMOD package.
 
-## Documentation
+Generated projects use a shared Cocos2d-x checkout. They create a matching
+prebuilt engine library when one is not already available.
 
-We wrote some documentations to help developers upgrade to v4:
-- [how to run tests and how to create a new project and run](https://docs.cocos2d-x.org/cocos2d-x/v4/en/installation/)
-- [v4 updrade guide](https://docs.cocos2d-x.org/cocos2d-x/v4/en/upgradeGuide/)
+## Compatibility
+
+Projects using the old Box2D API need to migrate their Box2D code to 3.1.1.
+Existing C++ and Lua projects can continue to use their Cocos2d-x APIs, but
+should adopt the updated CMake and Android project files.
+
+macOS, Android and Linux source builds were validated for this release.
+Windows and iOS have not yet been revalidated with all updated dependencies.
+
+## Cocos2d-x 4.0
+
+Cocos2d-x 4.0 introduced Metal rendering on macOS and iOS, moved all
+platforms to CMake and removed the deprecated JavaScript bindings.

@@ -1,3 +1,21 @@
+cocos2d-x-4.1.0 Jul.30 2026
+
+[HIGHLIGHT]     Build: dependencies are pinned in `external` and built from source
+[HIGHLIGHT]     Projects: generated games reuse shared engine prebuilts
+[HIGHLIGHT]     Android: updated Gradle, SDK, NDK, CMake, and JDK support
+[HIGHLIGHT]     Physics: upgraded Box2D to 3.1.1
+
+[NEW]           Box2D: added a basic test and debug renderer
+[NEW]           Linux: replaced the retired FMOD package with miniaudio
+
+[REFINE]        Lua: updated LuaJIT, tolua++, and LuaSocket
+[REFINE]        Console: updated Python support and removed telemetry
+[REFINE]        Build: removed the dependency-download workflow
+[REFINE]        XML: replaced RapidXML parsing with tinyxml2
+
+[FIX]           Chipmunk2D: fixed body setup and Android crashes
+[FIX]           Build: fixed current macOS, Android, and Linux toolchains
+
 cocos2d-x-4.0  Dec.3 2019
 
 [HIGHLIGHT]     Support metal
