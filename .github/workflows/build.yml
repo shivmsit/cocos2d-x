@@ -1,0 +1,68 @@
+# Copyright (c) 2026 Shivpratap Chauhan <shivmsit@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: macOS
+
+on:
+  push:
+    branches:
+      - v4.1
+    tags:
+      - cocos2d-x-4.1.*
+  pull_request:
+    branches:
+      - v4.1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+
+jobs:
+  macos:
+    name: macOS Debug
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Build engine prebuilt
+        run: |
+          ./prebuilt/build-prebuilt.sh \
+            --platform macosx \
+            --arch "$(uname -m)" \
+            --config Debug
+
+      - name: Generate C++ project
+        run: |
+          python3 tools/cocos2d-console/bin/cocos.py new CIGame \
+            -p org.cocos2dx.cigame \
+            -l cpp \
+            -d "$RUNNER_TEMP"
+
+      - name: Build generated project
+        run: |
+          cmake \
+            -S "$RUNNER_TEMP/CIGame" \
+            -B "$RUNNER_TEMP/CIGame/build" \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_OSX_ARCHITECTURES="$(uname -m)" \
+            -DCOCOS2DX_ROOT_PATH="$GITHUB_WORKSPACE" \
+            -DCOCOS2DX_ENGINE_MODE=PREBUILT \
+            -DCOCOS2DX_BUILD_PREBUILT_IF_MISSING=OFF
+          cmake --build "$RUNNER_TEMP/CIGame/build" --parallel
