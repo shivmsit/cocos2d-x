@@ -37,7 +37,7 @@ if(ANDROID)
          )
     list(APPEND GAME_SOURCE
          Classes/JNITest/JNITest.cpp
-         proj.android/app/jni/main.cpp
+         proj.android/app/src/main/cpp/main.cpp
          )
 elseif(LINUX)
     list(APPEND GAME_SOURCE

@@ -1,48 +1,54 @@
-import org.gradle.internal.os.OperatingSystem;
-
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
-    compileSdkVersion PROP_COMPILE_SDK_VERSION.toInteger()
+    namespace 'org.cocos2dx.cpp_tests'
+    compileSdk PROP_COMPILE_SDK_VERSION.toInteger()
+
+    ndkVersion PROP_NDK_VERSION
 
     defaultConfig {
-        applicationId "org.cocos2dx.cpp_tests"
-        minSdkVersion PROP_MIN_SDK_VERSION
-        targetSdkVersion PROP_TARGET_SDK_VERSION
+        applicationId 'org.cocos2dx.cpp_tests'
+        minSdk PROP_MIN_SDK_VERSION.toInteger()
+        targetSdk PROP_TARGET_SDK_VERSION.toInteger()
         versionCode 1
-        versionName "1.0"
+        versionName '1.0'
 
         externalNativeBuild {
             cmake {
                 targets 'cpp_tests'
-                arguments "-DCMAKE_FIND_ROOT_PATH=", "-DANDROID_STL=c++_static", "-DANDROID_TOOLCHAIN=clang", "-DANDROID_ARM_NEON=TRUE"
-                cppFlags "-frtti -fexceptions -fsigned-char"
+                arguments '-DANDROID_STL=c++_static'
+                cppFlags '-frtti -fexceptions -fsigned-char'
             }
         }
 
         ndk {
-            abiFilters = []
-            abiFilters.addAll(PROP_APP_ABI.split(':').collect{it as String})
+            abiFilters.addAll(PROP_APP_ABI.split(':'))
         }
     }
 
-    sourceSets.main {
-        java.srcDir "src"
-        res.srcDir "res"
-        manifest.srcFile "AndroidManifest.xml"
-        assets.srcDir "assets"
+    sourceSets {
+        main {
+            assets.srcDirs 'src/main/assets', "$buildDir/generated/assets/cocos"
+        }
     }
 
     externalNativeBuild {
         cmake {
-            path "../../CMakeLists.txt"
+            path file('../../CMakeLists.txt')
+            version PROP_CMAKE_VERSION
         }
     }
 
-    signingConfigs {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
 
-       release {
-            if (project.hasProperty("RELEASE_STORE_FILE")) {
+    signingConfigs {
+        release {
+            if (project.hasProperty('RELEASE_STORE_FILE')) {
                 storeFile file(RELEASE_STORE_FILE)
                 storePassword RELEASE_STORE_PASSWORD
                 keyAlias RELEASE_KEY_ALIAS
@@ -52,39 +58,29 @@ android {
     }
 
     buildTypes {
-        release {
-            debuggable false
-            jniDebuggable false
-            renderscriptDebuggable false
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            if (project.hasProperty("RELEASE_STORE_FILE")) {
-                signingConfig signingConfigs.release
-            }
+        debug {
+            jniDebuggable true
         }
 
-        debug {
-            debuggable true
-            jniDebuggable true
-            renderscriptDebuggable true
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (project.hasProperty('RELEASE_STORE_FILE')) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
 
-android.applicationVariants.all { variant ->
+tasks.register('copyCocosResources', Copy) {
+    from '../../Resources'
+    into layout.buildDirectory.dir('generated/assets/cocos')
+    exclude '**/*.gz'
+}
 
-    delete "${projectDir}/assets"
-    def targetName = variant.name.capitalize()
-    def copyTaskName = "copy${targetName}ResourcesToAssets"
-    tasks.register(copyTaskName) {
-        copy {
-            from "${projectDir}/../../Resources"
-            into "${projectDir}/assets"
-            exclude "**/*.gz"
-        }
-    }
-    tasks.getByName("pre${targetName}Build").dependsOn copyTaskName
+tasks.named('preBuild').configure {
+    dependsOn tasks.named('copyCocosResources')
 }
 
 dependencies {
