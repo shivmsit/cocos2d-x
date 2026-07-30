@@ -29,14 +29,14 @@ jobs:
 
     steps:
       - name: Check out sources
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version: "3.x"
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -67,7 +67,7 @@ jobs:
 
       - name: Generate C++ project
         run: |
-          python3 tools/cocos2d-console/bin/cocos.py --agreement n new CIGame \
+          python3 tools/cocos2d-console/bin/cocos.py new CIGame \
             -p org.cocos2dx.cigame \
             -l cpp \
             -d "$RUNNER_TEMP"

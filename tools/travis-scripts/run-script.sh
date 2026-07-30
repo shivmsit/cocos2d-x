@@ -70,7 +70,7 @@ function build_mac_cmake()
     NUM_OF_CORES=`getconf _NPROCESSORS_ONLN`
     
     # pushd $COCOS2DX_ROOT
-    # python -u tools/cocos2d-console/bin/cocos.py --agreement n new -l cpp -p my.pack.qqqq cocos_new_test
+    # python -u tools/cocos2d-console/bin/cocos.py new -l cpp -p my.pack.qqqq cocos_new_test
     # popd
     # cd $COCOS2DX_ROOT/cocos_new_test
     cd $COCOS2DX_ROOT
@@ -89,7 +89,7 @@ function build_ios_cmake()
     NUM_OF_CORES=`getconf _NPROCESSORS_ONLN`
 
     # pushd $COCOS2DX_ROOT
-    # python -u tools/cocos2d-console/bin/cocos.py --agreement n new -l cpp -p my.pack.qqqq cocos_new_test
+    # python -u tools/cocos2d-console/bin/cocos.py new -l cpp -p my.pack.qqqq cocos_new_test
     # popd
     # cd $COCOS2DX_ROOT/cocos_new_test
     cd $COCOS2DX_ROOT
@@ -389,7 +389,7 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
         source ../environment.sh
         pushd $COCOS2DX_ROOT
         update_cocos_files
-        python -u tools/cocos2d-console/bin/cocos.py --agreement n new -l cpp -p my.pack.qqqq cocos_new_test
+        python -u tools/cocos2d-console/bin/cocos.py new -l cpp -p my.pack.qqqq cocos_new_test
         popd
         pushd $COCOS2DX_ROOT/cocos_new_test/proj.android
         do_retry ./gradlew build
@@ -401,7 +401,7 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
         genernate_binding_codes
         pushd $COCOS2DX_ROOT
         update_cocos_files
-        python -u tools/cocos2d-console/bin/cocos.py --agreement n new -l lua -p my.pack.qqqq cocos_new_test
+        python -u tools/cocos2d-console/bin/cocos.py new -l lua -p my.pack.qqqq cocos_new_test
         popd
 
         echo "Building tests ..."
