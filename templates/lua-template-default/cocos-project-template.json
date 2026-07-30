@@ -27,69 +27,6 @@
                 "from": "templates/lua-template-default/res",
                 "to": "res",
                 "exclude": []
-            },
-            {
-                "from": "external/win32-specific/gles/prebuilt",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
-            },
-            {
-                "from": "external/win32-specific/icon/prebuilt",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
-            },
-            {
-                "from": "external/win32-specific/MP3Decoder/prebuilt",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
-            },
-            {
-                "from": "external/win32-specific/OggDecoder/prebuilt",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
-            },
-            {
-                "from": "external/win32-specific/OpenalSoft/prebuilt",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
-            },
-            {
-                "from": "external/win32-specific/zlib/prebuilt",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
-            },
-            {
-                "from": "external/curl/prebuilt/win32",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
-            },
-            {
-                "from": "external/lua/luajit/prebuilt/win32",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
-            },
-            {
-                "from": "external/websockets/prebuilt/win32",
-                "to": "runtime/win32",
-                "include": [
-                    "*.dll"
-                ]
             }
         ]
     },
@@ -105,10 +42,6 @@
                 "proj.win32/Release.win32",
                 "proj.win32/HelloLua.sdf"
             ]
-        },
-        "append_x_engine": {
-            "from": ".",
-            "to": "frameworks/cocos2d-x"
         },
         "append_dir": [
             {

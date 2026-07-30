@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 # ****************************************************************************/
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.16)
 
 set(APP_NAME HelloLua)
 
@@ -34,7 +34,8 @@ if(XCODE)
 endif()
 
 set(RUNTIME_SRC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/frameworks/runtime-src)
-set(COCOS2DX_ROOT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/frameworks/cocos2d-x)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CocosEngine.cmake)
+cocos2dx_resolve_root(COCOS2DX_ROOT_PATH)
 set(CMAKE_MODULE_PATH ${COCOS2DX_ROOT_PATH}/cmake/Modules/)
 
 include(CocosBuildSet)
@@ -58,6 +59,12 @@ endif()
 set(GAME_HEADER ${RUNTIME_SRC_ROOT}/Classes/AppDelegate.h)
 set(GAME_SOURCE ${RUNTIME_SRC_ROOT}/Classes/AppDelegate.cpp)
 # sources need to compile info, include dirs and source files
+include_directories(
+        ${RUNTIME_SRC_ROOT}/Classes
+        ${COCOS2DX_ROOT_PATH}/cocos/scripting/lua-bindings/auto
+        ${COCOS2DX_ROOT_PATH}/cocos/scripting/lua-bindings/manual
+        ${COCOS2DX_ROOT_PATH}/external/tolua
+)
 
 if(ANDROID)
     # change APP_NAME to the share library name for Android, it's value depend on AndroidManifest.xml
@@ -133,9 +140,6 @@ if(APPLE)
         set_target_properties(${APP_NAME} PROPERTIES
                               MACOSX_BUNDLE_INFO_PLIST "${RUNTIME_SRC_ROOT}/proj.ios_mac/mac/Info.plist"
                               )
-        set_target_properties(${APP_NAME} PROPERTIES
-            LINK_FLAGS "-pagezero_size 10000 -image_base 100000000"
-        )
     elseif(IOS)
         set_target_properties(${APP_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${RUNTIME_SRC_ROOT}/proj.ios_mac/ios/Info.plist")
         set_xcode_property(${APP_NAME} ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
@@ -147,7 +151,7 @@ elseif(WINDOWS)
 endif()
 # copy resource on linux or WINDOWS
 if(LINUX OR WINDOWS)
-    cocos_get_resource_path(APP_RES_DIR ${APP_NAME})
-    cocos_copy_target_res(${APP_NAME} LINK_TO ${APP_RES_DIR}/res FOLDERS ${res_res_folders})
-    cocos_copy_lua_scripts(${APP_NAME} ${res_src_folders} ${APP_RES_DIR}/src )
+    set(APP_RES_DIR "$<TARGET_FILE_DIR:${APP_NAME}>/Resources")
+    cocos_copy_target_res(${APP_NAME} COPY_TO ${APP_RES_DIR}/res FOLDERS ${res_res_folders})
+    cocos_copy_target_res(${APP_NAME} COPY_TO ${APP_RES_DIR}/src FOLDERS ${res_src_folders})
 endif()
