@@ -69,7 +69,7 @@ public:
     virtual void setNativePlaceHolder(const char* pText) override {};
     virtual void setNativeVisible(bool visible) override {};
     virtual void updateNativeFrame(const Rect& rect) override {};
-    virtual const char* getNativeDefaultFontName() override {};
+    virtual const char* getNativeDefaultFontName() override { return "sans-serif"; };
     virtual void nativeOpenKeyboard() override;
     virtual void nativeCloseKeyboard() override {};
     virtual void setNativeMaxLength(int maxLength) override {};
@@ -88,4 +88,3 @@ NS_CC_END
 #endif /* #if (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX) */
 
 #endif /* __UIEDITBOXIMPLLINUX_H__ */
-
