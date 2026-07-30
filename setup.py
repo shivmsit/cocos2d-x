@@ -63,8 +63,8 @@ ANDROID_SDK_ROOT = 'ANDROID_SDK_ROOT'
 
 
 def _check_python_version():
-    if sys.version_info < (3, 13):
-        print("Python 3.13 or later is required.")
+    if sys.version_info < (3, 8):
+        print("Python 3.8 or later is required.")
         return False
 
     return True
@@ -220,7 +220,9 @@ class SetEnvVar(object):
             str1 = line.lstrip(' \t')
             match = patten.match(str1)
             if match is not None:
-                ret = match.group(1)
+                ret = match.group(1).strip()
+                if len(ret) >= 2 and ret[0] == ret[-1] and ret[0] in ('"', "'"):
+                    ret = ret[1:-1]
 
         return ret
 
@@ -515,11 +517,9 @@ class SetEnvVar(object):
         home = os.path.expanduser('~')
         str_re = SetEnvVar.RE_FORMAT % var_name
         patten = re.compile(str_re)
-        replace_str = 'export %s=%s\n' % (var_name, value)
+        replace_str = 'export %s="%s"\n' % (var_name, value)
 
-        file_list = SetEnvVar.MAC_CHECK_FILES
-        if self._isLinux():
-            file_list = SetEnvVar.LINUX_CHECK_FILES
+        file_list = self._get_unix_file_list()
 
         print(("  ->Update variable %s in files %s" %
               (var_name, str(file_list))))
