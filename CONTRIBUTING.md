@@ -33,11 +33,10 @@ If you want to contribute code, please follow these steps:
 -   Download the latest cocos2d-x develop branch from github:
 
 ```
-$ git clone git://github.com/cocos2d/cocos2d-x.git
+$ git clone https://github.com/shivmsit/cocos2d-x-fork.git
 $ cd cocos2d-x
-$ git checkout v3
-$ ./download-deps.py
-$ git submodule update --init
+$ git checkout v4.1
+$ git submodule update --init --recursive
 ```
 
 -   Apply your changes in the recently downloaded repository

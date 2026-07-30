@@ -1339,7 +1339,6 @@
         "docs/framework_architecture.jpg", 
         "docs/framework_architecture_v4.png", 
         "docs/img-cocos.jpg", 
-        "download-deps.py", 
         "extensions/CMakeLists.txt", 
         "extensions/ExtensionExport.h", 
         "extensions/ExtensionMacros.h", 

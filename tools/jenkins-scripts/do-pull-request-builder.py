@@ -17,11 +17,6 @@ branch = payload['branch']
 workspace = os.environ['WORKSPACE']
 node_name = os.environ['NODE_NAME']
 
-def download_3rd_libs(branch):
-    #run download-deps.py
-    print("prepare to downloading ...")
-    os.system('python download-deps.py -r no')
-
 def lint_include_of_cocos_headers():
   global branch
   if(branch != 'v1' and branch != 'v2'):
@@ -80,7 +75,6 @@ def cleanup_workspace():
     os.system("git branch -D pull" + str(pr_num))
 
 def main():
-    download_3rd_libs(branch)
     lint_include_of_cocos_headers()
     #generate jsb and luabindings
     gen_scripting_bindings()

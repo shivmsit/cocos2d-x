@@ -24,21 +24,16 @@ cocos2d-x is:
   * Easy to use
   * Community supported
 
-Git user attention
------------------------
+Get the source
+--------------
 
-1. Clone the repo from GitHub.
+Clone the repository with its source dependencies:
 
-         $ git clone https://github.com/cocos2d/cocos2d-x.git
+    $ git clone --recursive -b v4.1 https://github.com/shivmsit/cocos2d-x-fork.git
 
-2. After cloning the repo, please execute `download-deps.py` to download and install dependencies.
+For an existing clone:
 
-         $ cd cocos2d-x
-         cocos2d-x $ python download-deps.py
-
-3. After running `download-deps.py`.
-
-         cocos2d-x $ git submodule update --init
+    $ git submodule update --init --recursive
 
 Download stable versions
 -----------------------
