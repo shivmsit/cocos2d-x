@@ -362,10 +362,14 @@ void CommandBufferMTL::endFrame()
     
     [_mtlCommandBuffer presentDrawable:DeviceMTL::getCurrentDrawable()];
     _drawableTexture = DeviceMTL::getCurrentDrawable().texture;
+    // Capture the dispatch object by value so the completion block does not
+    // depend on the command buffer owner still being alive.
+    dispatch_semaphore_t frameBoundarySemaphore = _frameBoundarySemaphore;
     [_mtlCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
         // GPU work is complete
         // Signal the semaphore to start the CPU work
-        dispatch_semaphore_signal(_frameBoundarySemaphore);
+        if (frameBoundarySemaphore != nullptr)
+            dispatch_semaphore_signal(frameBoundarySemaphore);
     }];
 
     [_mtlCommandBuffer commit];

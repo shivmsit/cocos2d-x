@@ -148,8 +148,8 @@ if(XCODE OR VS)
     cocos_mark_code_files("cocos2d")
 endif()
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-    message("CMake 3.16 target_precompile_headers")
+if((XCODE OR VS) AND ${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+    message("CMake target_precompile_headers for IDE generators")
     target_precompile_headers(cocos2d PRIVATE 
        "$<$<COMPILE_LANGUAGE:CXX>:cocos2d.h>")
 endif()
