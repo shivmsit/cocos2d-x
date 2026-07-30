@@ -190,7 +190,7 @@ Documentation
 -------------
 
 * [Prebuilt library guide](prebuilt/README.md)
-* [Third-party dependency versions](external/SOURCES.md)
+* [Third-party dependency versions](https://github.com/shivmsit/cocos2d-x-dependencies/blob/main/SOURCES.md)
 * [Release notes](docs/RELEASE_NOTES.md)
 * [Changelog](CHANGELOG)
 

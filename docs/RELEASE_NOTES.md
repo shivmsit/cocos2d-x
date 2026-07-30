@@ -1,21 +1,16 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+# Cocos2d-x 3.18.0 Release Notes
 
-- [Cocos2d-x 3.17.2 Release Notes](#cocos2d-x-3172-release-notes)
-  - [Highlights](#highlights)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Cocos2d-x 3.17.2 Release Notes #
-
-Version 3.17.2 focuses on bugs fixing and performance opimization on OPPO devices.   
+Cocos2d-x 3.18 modernizes the native engine while preserving the familiar
+Cocos2d-x API and namespace.
 
 ## Highlights
 
-- Performance optimization on OPPO devices
-- Fixed bug that`FileUtils::listFiles()` can not work correctly if the file path starts with `assets/` on Android
-- Fixed crash caused by Audio on iOS
-- Fixed bug that `VideoPlayer` can not play video in obb file on Android
+- Builds supported third-party libraries from versioned source.
+- Adds reusable macOS and Android engine prebuilts.
+- Updates Android Gradle, SDK, NDK, CMake and JDK support.
+- Updates Box2D to 3.1.1 and expands the physics examples.
+- Updates LuaJIT and restores the macOS Lua Simulator.
+- Supports source builds and `cpp-tests` on Linux.
+- Updates the Cocos Console for Python 3 and removes telemetry.
 
-More detail change log please refer to [ChangeLog](https://github.com/cocos2d/cocos2d-x/blob/v3/CHANGELOG).
+See the [changelog](../CHANGELOG) for the complete summary.
