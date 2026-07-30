@@ -47,9 +47,9 @@ git clone --recursive --branch v3.18 \
 cd cocos2d-x
 ```
 
-All third-party source required by the supported macOS and Android builds is
-versioned in the `external/` submodule. There is no dependency-download step
-and `download-deps.py` is no longer used.
+All third-party source required by the supported macOS, Android and Linux
+builds is versioned in the `external/` submodule. There is no
+dependency-download step and `download-deps.py` is no longer used.
 
 If the repository was cloned without `--recursive`, initialize its remaining
 submodules afterwards:
@@ -142,6 +142,21 @@ cmake -S . -B build/xcode -G Xcode
 open build/xcode/*.xcodeproj
 ```
 
+Linux
+-----
+
+On Ubuntu or Debian, run from the repository root:
+
+```sh
+./build/install-deps-linux.sh
+cmake -S tests/cpp-tests \
+  -B tests/cpp-tests/build-linux-debug \
+  -DCMAKE_BUILD_TYPE=Debug
+cmake --build tests/cpp-tests/build-linux-debug --parallel
+cd tests/cpp-tests/build-linux-debug/bin/cpp-tests
+./cpp-tests
+```
+
 Windows
 -------
 
@@ -161,8 +176,8 @@ cmake --build build/windows --config Debug
 ```
 
 Windows builds are not yet part of the validated release workflow. The
-original iOS and Linux implementations also remain in the source tree but have
-not yet been revalidated with all updated dependencies.
+original iOS implementation also remains in the source tree but has not yet
+been revalidated with all updated dependencies.
 
 Using CMake
 -----------
@@ -207,7 +222,7 @@ Main features
    * Render To Texture
    * Touch/Accelerometer on mobile devices
    * Touch/Mouse/Keyboard on desktop
-   * Sound Engine support (CocosDenshion library) based on OpenAL
+   * Sound playback through platform audio backends
    * Integrated Slow motion/Fast forward
    * Fast and compressed textures: PVR compressed and uncompressed textures,
      ETC1 compressed textures, and more
@@ -222,7 +237,7 @@ Build requirements
 
 * Git
 * CMake 3.22 or later
-* Python 3.13 or later for `setup.py` and the `cocos` console
+* Python 3 for `setup.py` and the `cocos` console
 * A C/C++ compiler for the target platform
 * Current Xcode or Xcode Command Line Tools for macOS
 * JDK 17 or later for Android

@@ -28,6 +28,7 @@
 #define CC_ALLOCATOR_BASE_H
 /// @cond DO_NOT_SHOW
 
+#include <cstdint>
 #include <string>
 
 #include "platform/CCPlatformMacros.h"
