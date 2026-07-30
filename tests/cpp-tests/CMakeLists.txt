@@ -358,6 +358,15 @@ if(WINDOWS OR MACOSX OR LINUX)
 endif()
 
 list(APPEND GAME_HEADER
+     Classes/Box2DTest/Box2dTest.h
+     Classes/Box2DTestBed/GLES-Render.h
+     )
+list(APPEND GAME_SOURCE
+     Classes/Box2DTest/Box2dTest.cpp
+     Classes/Box2DTestBed/GLES-Render.cpp
+     )
+
+list(APPEND GAME_HEADER
      Classes/Physics3DTest/Physics3DTest.h
      Classes/NavMeshTest/NavMeshTest.h
      )
