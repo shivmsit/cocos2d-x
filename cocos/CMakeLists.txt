@@ -120,6 +120,9 @@ list(APPEND COCOS_SRC ${COCOS_HEADER})
 add_library(cocos2d ${COCOS_SRC})
 
 # use external libs
+if(WINDOWS)
+    set(COCOS_EXTERNAL_SQLITE ON)
+endif()
 add_subdirectory(${COCOS2DX_ROOT_PATH}/external ${ENGINE_BINARY_PATH}/external)
 target_link_libraries(cocos2d external)
 

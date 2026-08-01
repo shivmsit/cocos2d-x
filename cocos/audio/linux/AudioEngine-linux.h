@@ -24,7 +24,8 @@
  ****************************************************************************/
 #include "platform/CCPlatformConfig.h"
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
+#if CC_TARGET_PLATFORM == CC_PLATFORM_LINUX || \
+    CC_TARGET_PLATFORM == CC_PLATFORM_WIN32
 
 #ifndef __AUDIO_ENGINE_LINUX_H_
 #define __AUDIO_ENGINE_LINUX_H_
@@ -95,4 +96,4 @@ private:
 NS_CC_END
 
 #endif // __AUDIO_ENGINE_LINUX_H_
-#endif // CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
+#endif // CC_TARGET_PLATFORM == CC_PLATFORM_LINUX || CC_PLATFORM_WIN32
