@@ -1,0 +1,50 @@
+# Copyright (c) 2026 Shivpratap Chauhan <shivmsit@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: Linux
+
+on:
+  push:
+    branches:
+      - v3.18
+  pull_request:
+    branches:
+      - v3.18
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+
+jobs:
+  linux:
+    name: Linux Debug
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Install build dependencies
+        run: ./build/install-deps-linux.sh
+
+      - name: Configure cpp-tests
+        run: |
+          cmake -S tests/cpp-tests \
+            -B tests/cpp-tests/build-linux \
+            -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build cpp-tests
+        run: |
+          cmake --build tests/cpp-tests/build-linux \
+            --target cpp-tests \
+            --parallel

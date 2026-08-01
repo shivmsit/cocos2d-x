@@ -4,9 +4,9 @@
 cocos2d-x
 =========
 
-| macOS | Android |
-| --- | --- |
-| [![macOS](https://github.com/shivmsit/cocos2d-x/actions/workflows/build.yml/badge.svg?branch=v3.18)](https://github.com/shivmsit/cocos2d-x/actions/workflows/build.yml?query=branch%3Av3.18) | [![Android](https://github.com/shivmsit/cocos2d-x/actions/workflows/android.yml/badge.svg?branch=v3.18)](https://github.com/shivmsit/cocos2d-x/actions/workflows/android.yml?query=branch%3Av3.18) |
+| macOS | Android | Linux | Windows |
+| --- | --- | --- | --- |
+| [![macOS](https://github.com/shivmsit/cocos2d-x/actions/workflows/build.yml/badge.svg?branch=v3.18)](https://github.com/shivmsit/cocos2d-x/actions/workflows/build.yml?query=branch%3Av3.18) | [![Android](https://github.com/shivmsit/cocos2d-x/actions/workflows/android.yml/badge.svg?branch=v3.18)](https://github.com/shivmsit/cocos2d-x/actions/workflows/android.yml?query=branch%3Av3.18) | [![Linux](https://github.com/shivmsit/cocos2d-x/actions/workflows/linux.yml/badge.svg?branch=v3.18)](https://github.com/shivmsit/cocos2d-x/actions/workflows/linux.yml?query=branch%3Av3.18) | [![Windows](https://github.com/shivmsit/cocos2d-x/actions/workflows/windows.yml/badge.svg?branch=v3.18)](https://github.com/shivmsit/cocos2d-x/actions/workflows/windows.yml?query=branch%3Av3.18) |
 
 [cocos2d-x][1] is a multi-platform framework for building 2D games, interactive
 books, demos and other graphical applications. It is based on
@@ -47,8 +47,8 @@ git clone --recursive --branch v3.18 \
 cd cocos2d-x
 ```
 
-All third-party source required by the supported macOS, Android and Linux
-builds is versioned in the `external/` submodule. There is no
+All third-party source required by the supported macOS, Android, Linux and
+Windows builds is versioned in the `external/` submodule. There is no
 dependency-download step and `download-deps.py` is no longer used.
 
 If the repository was cloned without `--recursive`, initialize its remaining
@@ -160,24 +160,21 @@ cd tests/cpp-tests/build-linux-debug/bin/cpp-tests
 Windows
 -------
 
-Windows support is **work in progress**.
-`prebuilt/build-prebuilt.sh` is a POSIX shell script for macOS and Android
-cross-compilation; it is not the Windows build interface. A native
-PowerShell/CMake entrypoint and prebuilt Windows library still need to
-be implemented and tested.
-
-The inherited CMake source build can be used experimentally with Visual Studio
-2022:
+Install CMake 3.22 or later, Visual Studio 2019 or later with the **Desktop
+development with C++** workload, and the Windows 10 SDK. Build the Debug test
+application from the repository root:
 
 ```powershell
-cmake -S . -B build/windows -G "Visual Studio 17 2022" -A x64 `
-  -DCOCOS2DX_ENGINE_MODE=SOURCE
-cmake --build build/windows --config Debug
+cmake -S tests/cpp-tests -B tests/cpp-tests/build-windows `
+  -G "Visual Studio 16 2019" -A x64
+cmake --build tests/cpp-tests/build-windows `
+  --config Debug --target cpp-tests --parallel
+.\tests\cpp-tests\build-windows\bin\cpp-tests\Debug\cpp-tests.exe
 ```
 
-Windows builds are not yet part of the validated release workflow. The
-original iOS implementation also remains in the source tree but has not yet
-been revalidated with all updated dependencies.
+Use the `Visual Studio 17 2022` generator when building with Visual Studio
+2022. Windows currently uses a CMake source build; the POSIX prebuilt script is
+for macOS and Android.
 
 Using CMake
 -----------
@@ -240,6 +237,7 @@ Build requirements
 * Python 3 for `setup.py` and the `cocos` console
 * A C/C++ compiler for the target platform
 * Current Xcode or Xcode Command Line Tools for macOS
+* Visual Studio 2019 or later and the Windows 10 SDK for Windows
 * JDK 17 or later for Android
 * Android SDK 36
 * Android API 24 or later
