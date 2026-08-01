@@ -47,4 +47,4 @@ jobs:
         run: |
           cmake --build tests/cpp-tests/build-linux \
             --target cpp-tests \
-            --parallel
+            --parallel 3
