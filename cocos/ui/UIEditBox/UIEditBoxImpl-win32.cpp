@@ -61,7 +61,9 @@ namespace ui {
 
         s_hInstance = ::GetModuleHandleW(nullptr);
 
-        s_prevCocosWndProc = (WNDPROC)SetWindowLongPtrW(s_hwndCocos, GWL_WNDPROC, (LONG_PTR)hookGLFWWindowProc);
+        s_prevCocosWndProc = reinterpret_cast<WNDPROC>(
+            SetWindowLongPtrW(s_hwndCocos, GWLP_WNDPROC,
+                              reinterpret_cast<LONG_PTR>(hookGLFWWindowProc)));
     }
 
     EditBoxImpl* __createSystemEditBox(EditBox* pEditBox)
@@ -98,7 +100,8 @@ namespace ui {
     {
         if (_hwndEdit)
         {
-            SetWindowLongPtrW(_hwndEdit, GWL_WNDPROC, (LONG_PTR)_prevWndProc);
+            SetWindowLongPtrW(_hwndEdit, GWLP_WNDPROC,
+                              reinterpret_cast<LONG_PTR>(_prevWndProc));
             ::DestroyWindow(_hwndEdit);
             _hasFocus = false;
             _changedTextManually = false;
@@ -121,12 +124,16 @@ namespace ui {
                 0,
                 0,   // set size in WM_SIZE message 
                 s_hwndCocos,         // parent window 
-                (HMENU)s_editboxChildID,   // edit control ID 
+                reinterpret_cast<HMENU>(
+                    static_cast<INT_PTR>(s_editboxChildID)), // edit control ID
                 s_hInstance,
                 this);        // pointer not needed 
 
-            SetWindowLongPtrW(_hwndEdit, GWL_USERDATA, (LONG_PTR)this);
-            _prevWndProc = (WNDPROC)SetWindowLongPtrW(_hwndEdit, GWL_WNDPROC, (LONG_PTR)WindowProc);
+            SetWindowLongPtrW(_hwndEdit, GWLP_USERDATA,
+                              reinterpret_cast<LONG_PTR>(this));
+            _prevWndProc = reinterpret_cast<WNDPROC>(
+                SetWindowLongPtrW(_hwndEdit, GWLP_WNDPROC,
+                                  reinterpret_cast<LONG_PTR>(WindowProc)));
 
             ::SendMessageW(_hwndEdit, EM_LIMITTEXT, this->_maxLength, 0);
             s_previousFocusWnd = s_hwndCocos;
