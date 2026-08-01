@@ -1,0 +1,49 @@
+# Copyright (c) 2026 Shivpratap Chauhan <shivmsit@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: Windows
+
+on:
+  push:
+    branches:
+      - v4.1
+  pull_request:
+    branches:
+      - v4.1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+
+jobs:
+  windows:
+    name: Windows Debug
+    runs-on: windows-2022
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Configure cpp-tests
+        run: >-
+          cmake -S tests/cpp-tests
+          -B tests/cpp-tests/build-windows
+          -G "Visual Studio 17 2022"
+          -A x64
+
+      - name: Build cpp-tests
+        run: >-
+          cmake --build tests/cpp-tests/build-windows
+          --config Debug
+          --target cpp-tests
+          --parallel
