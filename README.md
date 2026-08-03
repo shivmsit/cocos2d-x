@@ -47,8 +47,8 @@ git clone --recursive --branch v3.18 \
 cd cocos2d-x
 ```
 
-All third-party source required by the supported macOS, Android, Linux and
-Windows builds is versioned in the `external/` submodule. There is no
+All third-party source required by the supported macOS, iOS, Android, Linux
+and Windows builds is versioned in the `external/` submodule. There is no
 dependency-download step and `download-deps.py` is no longer used.
 
 If the repository was cloned without `--recursive`, initialize its remaining
@@ -122,6 +122,22 @@ the command line:
 cd proj.android
 ./gradlew assembleDebug
 ```
+
+iOS
+---
+
+From the generated game directory:
+
+```sh
+cmake -S . -B build/ios-debug -G Xcode \
+  -DCMAKE_SYSTEM_NAME=iOS \
+  -DCMAKE_OSX_SYSROOT=iphoneos \
+  -DCMAKE_OSX_ARCHITECTURES=arm64 \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0
+open build/ios-debug/*.xcodeproj
+```
+
+Select your development team and iOS device in Xcode, then run the app.
 
 macOS
 -----

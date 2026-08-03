@@ -62,6 +62,7 @@ private:
     float _ratio;
     cocos2d::GLProgram* _shaderProgram;
     GLint _colorLocation;
+    GLint _pointSizeLocation;
     b2DebugDraw _debugDraw;
 };
 

@@ -40,6 +40,7 @@ GLESDebugDraw::GLESDebugDraw(float ratio)
     : _ratio(ratio)
     , _shaderProgram(GLProgramCache::getInstance()->getGLProgram(GLProgram::SHADER_NAME_POSITION_U_COLOR))
     , _colorLocation(glGetUniformLocation(_shaderProgram->getProgram(), "u_color"))
+    , _pointSizeLocation(glGetUniformLocation(_shaderProgram->getProgram(), "u_pointSize"))
     , _debugDraw(b2DefaultDebugDraw())
 {
     _debugDraw.context = this;
@@ -208,11 +209,10 @@ void GLESDebugDraw::drawPoint(b2Vec2 point, float size, b2HexColor color)
 {
     prepare();
     setColor(color);
-    glPointSize(size);
+    _shaderProgram->setUniformLocationWith1f(_pointSizeLocation, size);
     const GLfloat points[] = {point.x * _ratio, point.y * _ratio};
     glVertexAttribPointer(GLProgram::VERTEX_ATTRIB_POSITION, 2, GL_FLOAT, GL_FALSE, 0, points);
     glDrawArrays(GL_POINTS, 0, 1);
-    glPointSize(1.0f);
 }
 
 void GLESDebugDraw::DrawPolygonCallback(const b2Vec2* v, int n, b2HexColor c, void* x)
