@@ -1,4 +1,4 @@
-cocos2d-x-4.1.0 Jul.30 2026
+cocos2d-x-4.1.0 Aug.3 2026
 
 [HIGHLIGHT]     Build: dependencies are pinned in `external` and built from source
 [HIGHLIGHT]     Projects: generated games reuse shared engine prebuilts
@@ -14,7 +14,7 @@ cocos2d-x-4.1.0 Jul.30 2026
 [REFINE]        XML: replaced RapidXML parsing with tinyxml2
 
 [FIX]           Chipmunk2D: fixed body setup and Android crashes
-[FIX]           Build: fixed current macOS, Android, and Linux toolchains
+[FIX]           Build: fixed macOS, Android, Linux, and Windows toolchains
 
 cocos2d-x-3.18.0 Jul.29 2026
 
