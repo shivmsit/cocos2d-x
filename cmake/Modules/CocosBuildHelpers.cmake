@@ -285,7 +285,17 @@ endmacro()
 
 # This little macro lets you set any XCode specific property, from ios.toolchain.cmake
 function(set_xcode_property TARGET XCODE_PROPERTY XCODE_VALUE)
-    set_property(TARGET ${TARGET} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY} ${XCODE_VALUE})
+    get_target_property(_aliased_target "${TARGET}" ALIASED_TARGET)
+    if(_aliased_target)
+        set(_xcode_target "${_aliased_target}")
+    else()
+        set(_xcode_target "${TARGET}")
+    endif()
+
+    get_target_property(_imported_target "${_xcode_target}" IMPORTED)
+    if(NOT _imported_target)
+        set_property(TARGET "${_xcode_target}" PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY} ${XCODE_VALUE})
+    endif()
 endfunction(set_xcode_property)
 
 # works same as find_package, but do additional care to properly find
